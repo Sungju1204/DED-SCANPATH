@@ -1,83 +1,101 @@
 <template>
-    <div class="main-frame">
+    <div class="main-frame" :class="{ 'sidebar-open': sidebarOpen }">
       <div class="glow-effect-1"></div>
       <div class="glow-effect-2"></div>
       
       <div class="title">HBNU_DED M250 Scan Pattern</div>
-      <div class="slash-button" @click="addToBottomPanel('/')">/</div>
+      <div v-show="currentPage === 1" class="slash-button" @click="addToBottomPanel('/')">/</div>
       
-      <div class="hamburger-menu" @click="toggleSidebar">
+      <div class="hamburger-menu" @click="toggleSidebar" :class="{ 'hidden': sidebarOpen }">
         <div class="hamburger-line"></div>
         <div class="hamburger-line"></div>
         <div class="hamburger-line"></div>
       </div>
 
       <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
-        <div 
-          v-for="page in 5" 
-          :key="page"
-          :class="['sidebar-item', { active: currentPage === page }]"
-          @click="switchPage(page)"
-        >
-          <div :class="['sidebar-icon', { active: currentPage === page }]"></div>
+        <div class="sidebar-header">
+          <div class="logo">mark<span class="logo-suffix">DAILY</span></div>
+          <button class="sidebar-close" @click="toggleSidebar">×</button>
+        </div>
+        
+        <div class="sidebar-menu">
+          <div 
+            v-for="(item, index) in menuItems" 
+            :key="index + 1"
+            :class="['sidebar-item', { active: currentPage === index + 1 }]"
+            @click="switchPage(index + 1)"
+          >
+            <div :class="['sidebar-icon', item.icon]"></div>
+            <span class="sidebar-text">{{ item.text }}</span>
+          </div>
+        </div>
+        
+        <div class="sidebar-footer">
+          <div class="sidebar-item">
+            <div class="sidebar-icon logout-icon"></div>
+            <span class="sidebar-text">LOGOUT</span>
+          </div>
         </div>
       </div>
 
-      <!-- Page 1: Main Dashboard -->
-      <MainDashboard 
-        v-show="currentPage === 1"
-        :selected-items="selectedItems"
-        @add-item="addToBottomPanel"
-        @remove-item="removeFromBottomPanel"
-      />
+      <div class="content-wrapper">
+        <!-- Page 1: Main Dashboard -->
+        <MainDashboard 
+          v-show="currentPage === 1"
+          :selected-items="selectedItems"
+          :custom-button-lists="customButtonLists"
+          @add-item="addToBottomPanel"
+          @remove-item="removeFromBottomPanel"
+          @add-button="addButton"
+        />
 
-      <!-- Page 2: Code Assignment -->
-      <CodeAssignment 
-        v-show="currentPage === 2"
-        :custom-button-lists="customButtonLists"
-        :button-codes="buttonCodes"
-        :selected-button="selectedButton"
-        @add-list="addList"
-        @add-button="addButton"
-        @select-button="selectButton"
-        @delete-buttons="deleteButtons"
-      />
+        <!-- Page 2: Code Assignment -->
+        <CodeAssignment 
+          v-show="currentPage === 2"
+          :custom-button-lists="customButtonLists"
+          :button-codes="buttonCodes"
+          :selected-button="selectedButton"
+          @add-button="addButton"
+          @select-button="selectButton"
+          @delete-buttons="deleteButtons"
+        />
 
-      <!-- Page 3: Cycle Management -->
-      <CycleManagement 
-        v-show="currentPage === 3"
-        :saved-cycles="savedCycles"
-        @show-cycle="showCycleContent"
-        @delete-cycle="deleteCycle"
-      />
+        <!-- Page 3: Cycle Management -->
+        <CycleManagement 
+          v-show="currentPage === 3"
+          :saved-cycles="savedCycles"
+          @show-cycle="showCycleContent"
+          @delete-cycle="deleteCycle"
+        />
 
-      <!-- Page 4: 3D Printing Code Generator -->
-      <PrintingCodeGenerator 
-        v-show="currentPage === 4"
-        :saved-cycles="savedCycles"
-        :button-codes="buttonCodes"
-        @generate-code="generate3DPrintingCode"
-      />
+        <!-- Page 4: 3D Printing Code Generator -->
+        <PrintingCodeGenerator 
+          v-show="currentPage === 4"
+          :saved-cycles="savedCycles"
+          :button-codes="buttonCodes"
+          @generate-code="generate3DPrintingCode"
+        />
 
-      <!-- Page 5: Placeholder -->
-      <div v-show="currentPage === 5" class="page-content">
-        <div class="code-assignment-container">
-          <div class="code-assignment-title">페이지 5</div>
-          <div style="color: #FFFFFF; text-align: center; margin-top: 100px;">준비 중...</div>
+        <!-- Page 5: Placeholder -->
+        <div v-show="currentPage === 5" class="page-content">
+          <div class="code-assignment-container">
+            <div class="code-assignment-title">페이지 5</div>
+            <div style="color: #2D3E8F; text-align: center; margin-top: 100px;">준비 중...</div>
+          </div>
         </div>
-      </div>
 
-      <RightPanel 
-        :content="textAreaContent"
-        :title="rightPanelTitle"
-        :placeholder="textAreaPlaceholder"
-        :show-save-cycle="currentPage === 1"
-        :show-save-code="currentPage === 2"
-        @update:content="textAreaContent = $event"
-        @save-cycle="saveCycle"
-        @save-code="saveCode"
-        @clear="clearTextArea"
-      />
+        <RightPanel 
+          :content="textAreaContent"
+          :title="rightPanelTitle"
+          :placeholder="textAreaPlaceholder"
+          :show-save-cycle="currentPage === 1"
+          :show-save-code="currentPage === 2"
+          @update:content="textAreaContent = $event"
+          @save-cycle="saveCycle"
+          @save-code="saveCode"
+          @clear="clearTextArea"
+        />
+      </div>
     </div>
 </template>
 
@@ -107,6 +125,14 @@ export default {
       customButtonLists: {},
       allButtons: ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4'],
       sidebarOpen: false,
+      
+      menuItems: [
+        { text: 'DASHBOARD', icon: 'dashboard-icon' },
+        { text: 'CLIENTS', icon: 'clients-icon' },
+        { text: 'MESSAGES', icon: 'messages-icon' },
+        { text: 'SCHEDULE', icon: 'schedule-icon' },
+        { text: 'PAGE 5', icon: 'page5-icon' }
+      ],
       
       // Text area data
       textAreaContent: '',
@@ -173,10 +199,7 @@ export default {
       this.textAreaContent = this.buttonCodes[button] || ''
     },
     
-    addList(listName) {
-      this.customButtonLists[listName] = []
-      this.saveData()
-    },
+
     
     addButton({ selectedList, buttonName }) {
       if (selectedList === 'C' || selectedList === 'F') {
@@ -406,6 +429,10 @@ export default {
       const customButtonLists = localStorage.getItem('customButtonLists')
       if (customButtonLists) {
         this.customButtonLists = JSON.parse(customButtonLists)
+        // 테스트1 관련 데이터 제거
+        if (this.customButtonLists['테스트1']) {
+          delete this.customButtonLists['테스트1']
+        }
         this.updateAllButtonsArray()
       }
     },
@@ -448,10 +475,8 @@ body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  padding: 0; /* 누락된 부분 보완 */
+  padding: 0;
 }
-
-
 
 .main-frame {
   position: relative;
@@ -459,10 +484,14 @@ body {
   height: 100vh;
   display: flex;
   background: #262525;
-
   overflow: hidden;
   transform-origin: center center;
   transform: scale(var(--scale-factor, 1));
+  transition: all 0.3s ease;
+}
+
+.main-frame.sidebar-open {
+  padding-left: 250px;
 }
 
 .glow-effect-1 {
@@ -491,7 +520,7 @@ body {
   position: absolute;
   width: 461px;
   height: 27px;
-  left: 97px;
+  left: 350px;
   top: 24px;
   font-family: 'Inter';
   font-style: normal;
@@ -503,8 +532,8 @@ body {
 
 .slash-button {
   position: absolute;
-  left: 570px;
-  top: 24px;
+  left: 800px;
+  top: 523px;
   width: 30px;
   height: 30px;
   background: #7B20E2;
@@ -518,6 +547,7 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  z-index: 1000;
 }
 
 .slash-button:hover {
@@ -531,115 +561,181 @@ body {
 }
 
 .hamburger-menu {
-  position: absolute;
-  width: 21px;
-  height: 14px;
-  left: 38px;
-  top: 30px;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 5px 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.hamburger-menu:hover {
-  opacity: 0.8;
+.hamburger-menu.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
 .hamburger-line {
-  position: absolute;
-  background: #FFFFFF;
-  height: 1.5px;
-}
-
-.hamburger-line:nth-child(1) {
-  width: 21px;
-  top: 0;
-}
-
-.hamburger-line:nth-child(2) {
-  width: 15px;
-  top: 7px;
-}
-
-.hamburger-line:nth-child(3) {
-  width: 10px;
-  top: 14px;
-}
-
-.sidebar {
-  position: absolute;
-  width: 56.14px;
-  height: 393.78px;
-  left: -56px;
-  top: 100px;
-  transition: left 0.3s ease;
-}
-
-.sidebar.sidebar-open {
-  left: 44px;
-}
-
-.sidebar-item {
-  position: absolute;
-  width: 56.14px;
-  height: 56.14px;
-  background: rgba(65, 105, 225, 0.08);
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  cursor: pointer;
+  width: 100%;
+  height: 3px;
+  background: #2D3E8F;
+  border-radius: 2px;
   transition: all 0.3s ease;
 }
 
+.sidebar {
+  position: fixed;
+  left: -250px;
+  top: 0;
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(180deg, #3B4CB8 0%, #2D3E8F 100%);
+  transition: left 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-open {
+  left: 0;
+}
+
+.sidebar-header {
+  padding: 30px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: #4ECDC4;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Inter', sans-serif;
+}
+
+.logo-suffix {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  vertical-align: super;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 2px 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .sidebar-item:hover {
-  background: rgba(123, 32, 226, 0.15);
-  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
 }
 
 .sidebar-item.active {
-  background: rgba(123, 32, 226, 0.3);
-  border: 2px solid #7B20E2;
+  background: #FFFFFF;
+  color: #2D3E8F;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
-
-.sidebar-item:nth-child(1) { top: 0; }
-.sidebar-item:nth-child(2) { top: 88px; }
-.sidebar-item:nth-child(3) { top: 176px; }
-.sidebar-item:nth-child(4) { top: 264px; }
-.sidebar-item:nth-child(5) { top: 352px; }
 
 .sidebar-icon {
-  width: 28px;
-  height: 28px;
-  border: 2px solid #A7A8AB;
-  position: relative;
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.7;
 }
 
-.sidebar-icon.active {
-  border-color: #7B20E2;
+.sidebar-item.active .sidebar-icon {
+  opacity: 1;
 }
 
-.page-content {
-  position: relative;
+.dashboard-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>');
 }
 
-.code-assignment-container {
-  position: absolute;
-  width: 653px;
-  height: 280px;
-  left: 135px;
-  top: 100px;
-  background: #1D1D1D;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+.clients-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M16 7c0-2.21-1.79-4-4-4S8 4.79 8 7s1.79 4 4 4 4-1.79 4-4zm-4 6c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/></svg>');
 }
 
-.code-assignment-title {
+.messages-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>');
+}
+
+.schedule-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>');
+}
+
+.page5-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
+}
+
+.logout-icon {
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>');
+}
+
+.sidebar-close {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.sidebar-close:hover {
+  background: rgba(255, 255, 255, 0.1);
   color: #FFFFFF;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  text-align: center;
+}
+
+
+.sidebar-text {
+  font-family: 'Inter', sans-serif;
+}
+
+.sidebar-footer {
+  padding: 20px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content-wrapper {
+  flex: 1;
+  position: relative;
+  transition: all 0.3s ease;
 }
 </style>
+
+
+
+
+
+

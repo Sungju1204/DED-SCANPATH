@@ -87,7 +87,7 @@ export default {
   position: absolute;
   width: 399px;
   height: 604px;
-  left: 801px;
+  left: 850px;
   top: 44px;
   background: #1D1D1D;
   box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);

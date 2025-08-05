@@ -4,19 +4,6 @@
       <div class="code-assignment-title">코드 할당</div>
       
       <div class="button-management-section">
-        <div class="add-list-section">
-          <div class="section-title">새 목록 추가</div>
-          <div class="add-list-input">
-            <input 
-              v-model="newListName" 
-              type="text" 
-              placeholder="목록 이름 (예: M, S, T...)" 
-              maxlength="10"
-            >
-            <button @click="addList">목록 추가</button>
-          </div>
-        </div>
-        
         <div class="add-button-section">
           <div class="section-title">새 버튼 추가</div>
           <div class="add-button-input">
@@ -141,10 +128,9 @@ export default {
       default: ''
     }
   },
-  emits: ['add-list', 'add-button', 'select-button', 'delete-buttons'],
+  emits: ['add-button', 'select-button', 'delete-buttons'],
   data() {
     return {
-      newListName: '',
       newButtonName: '',
       selectedListForButton: '',
       showCButtons: false,
@@ -155,7 +141,7 @@ export default {
   },
   computed: {
     availableLists() {
-      return ['C', 'F', ...Object.keys(this.customButtonLists)]
+      return ['C', 'F']
     },
     cButtons() {
       return ['C1', 'C2', 'C3', 'C4', ...(this.customButtonLists.C || [])]
@@ -165,24 +151,6 @@ export default {
     }
   },
   methods: {
-    addList() {
-      const listName = this.newListName.trim().toUpperCase()
-      
-      if (!listName) {
-        alert('목록 이름을 입력해주세요.')
-        return
-      }
-      
-      if (this.customButtonLists[listName]) {
-        alert('이미 존재하는 목록 이름입니다.')
-        return
-      }
-      
-      this.$emit('add-list', listName)
-      this.newListName = ''
-      alert(`목록 "${listName}"이 추가되었습니다.`)
-    },
-    
     addButton() {
       const selectedList = this.selectedListForButton
       const buttonName = this.newButtonName.trim().toUpperCase()
