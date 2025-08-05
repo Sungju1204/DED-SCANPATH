@@ -40,6 +40,7 @@
         @add-list="addList"
         @add-button="addButton"
         @select-button="selectButton"
+        @delete-buttons="deleteButtons"
       />
 
       <!-- Page 3: Cycle Management -->
@@ -251,6 +252,45 @@ export default {
     
     deleteCycle(index) {
       this.savedCycles.splice(index, 1)
+      this.saveData()
+    },
+    
+    deleteButtons({ listType, buttons }) {
+      // 기본 버튼들 (C1-C4, F1-F4)은 삭제 불가
+      const defaultButtons = ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4']
+      const deletableButtons = buttons.filter(button => !defaultButtons.includes(button))
+      
+      if (deletableButtons.length === 0) {
+        alert('기본 버튼(C1-C4, F1-F4)은 삭제할 수 없습니다.')
+        return
+      }
+      
+      // customButtonLists에서 버튼 제거
+      if (this.customButtonLists[listType]) {
+        this.customButtonLists[listType] = this.customButtonLists[listType].filter(
+          button => !deletableButtons.includes(button)
+        )
+      }
+      
+      // allButtons에서도 제거
+      deletableButtons.forEach(button => {
+        const index = this.allButtons.indexOf(button)
+        if (index > -1) {
+          this.allButtons.splice(index, 1)
+        }
+      })
+      
+      // buttonCodes에서도 제거
+      deletableButtons.forEach(button => {
+        delete this.buttonCodes[button]
+      })
+      
+      // 선택된 버튼이 삭제된 버튼 중 하나라면 선택 해제
+      if (deletableButtons.includes(this.selectedButton)) {
+        this.selectedButton = null
+        this.textAreaContent = ''
+      }
+      
       this.saveData()
     },
     
