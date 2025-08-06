@@ -6,7 +6,7 @@
       <div class="printing-settings-section">
         <div class="settings-group">
           <div class="setting-item">
-            <label for="layerThickness">Layer Thickness (mm)</label>
+            <label for="layerThickness">Layer (mm)</label>
             <input 
               v-model="printingSettings.layerThickness"
               type="number" 
