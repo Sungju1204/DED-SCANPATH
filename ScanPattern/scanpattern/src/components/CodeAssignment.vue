@@ -224,7 +224,7 @@ export default {
 .code-assignment-container {
   position: absolute;
   width: 653px;
-  height: 280px;
+  height: 380px;
   left: 135px;
   top: 100px;
   background: #1D1D1D;

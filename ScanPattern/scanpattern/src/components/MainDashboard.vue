@@ -94,6 +94,9 @@
 
 
     <div class="bottom-panel" id="bottomPanel">
+      <div class="bottom-panel-header" v-if="selectedItems.length > 0">
+        <button class="clear-all-button" @click="clearAllItems">전체 삭제</button>
+      </div>
       <div 
         v-for="item in selectedItems" 
         :key="item.id"
@@ -168,13 +171,18 @@ export default {
       return otherLists
     }
   },
-  emits: ['add-item', 'remove-item', 'add-button'],
+  emits: ['add-item', 'remove-item', 'add-button', 'clear-all-items'],
   methods: {
     addToBottomPanel(itemName) {
       this.$emit('add-item', itemName)
     },
     removeFromBottomPanel(itemId) {
       this.$emit('remove-item', itemId)
+    },
+    clearAllItems() {
+      if (confirm('모든 항목을 삭제하시겠습니까?')) {
+        this.$emit('clear-all-items')
+      }
     },
     addButton() {
       const selectedList = this.selectedListForButton
@@ -370,6 +378,36 @@ export default {
   max-width: calc(100vw - 600px);
 }
 
+.bottom-panel-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.clear-all-button {
+  padding: 6px 12px;
+  background: #E74C3C;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clear-all-button:hover {
+  background: #C0392B;
+  transform: scale(1.05);
+}
+
+.clear-all-button:active {
+  transform: scale(0.95);
+}
+
 .bottom-item {
   display: inline-block;
   background: #333;
@@ -530,3 +568,9 @@ export default {
   transform: translateY(1px);
 }
 </style> 
+
+
+
+
+
+

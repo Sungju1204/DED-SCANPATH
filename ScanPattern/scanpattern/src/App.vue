@@ -40,6 +40,7 @@
           @add-item="addToBottomPanel"
           @remove-item="removeFromBottomPanel"
           @add-button="addButton"
+          @clear-all-items="clearAllItems"
         />
 
         <!-- Page 2: Code Assignment -->
@@ -445,6 +446,10 @@ export default {
     
     toggleSidebar() {
       this.sidebarOpen = !this.sidebarOpen
+    },
+    clearAllItems() {
+      this.selectedItems = []
+      this.textAreaContent = ''
     }
   }
 }
@@ -741,6 +746,10 @@ body {
   transform: translateX(250px);
 }
 </style>
+
+
+
+
 
 
 
