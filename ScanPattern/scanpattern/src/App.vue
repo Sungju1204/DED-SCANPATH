@@ -14,7 +14,7 @@
 
       <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
         <div class="sidebar-header">
-          <div class="logo">mark<span class="logo-suffix">DAILY</span></div>
+          <div class="logo">3DP</div>
           <button class="sidebar-close" @click="toggleSidebar">×</button>
         </div>
         
@@ -27,13 +27,6 @@
           >
             <div :class="['sidebar-icon', item.icon]"></div>
             <span class="sidebar-text">{{ item.text }}</span>
-          </div>
-        </div>
-        
-        <div class="sidebar-footer">
-          <div class="sidebar-item">
-            <div class="sidebar-icon logout-icon"></div>
-            <span class="sidebar-text">LOGOUT</span>
           </div>
         </div>
       </div>
@@ -127,10 +120,10 @@ export default {
       sidebarOpen: false,
       
       menuItems: [
-        { text: 'DASHBOARD', icon: 'dashboard-icon' },
-        { text: 'CLIENTS', icon: 'clients-icon' },
-        { text: 'MESSAGES', icon: 'messages-icon' },
-        { text: 'SCHEDULE', icon: 'schedule-icon' },
+        { text: '사이클 생성', icon: 'dashboard-icon' },
+        { text: '코드 할당', icon: 'clients-icon' },
+        { text: '사이클 관리', icon: 'messages-icon' },
+        { text: '코드 파일 생성', icon: 'schedule-icon' },
         { text: 'PAGE 5', icon: 'page5-icon' }
       ],
       
@@ -487,11 +480,11 @@ body {
   overflow: hidden;
   transform-origin: center center;
   transform: scale(var(--scale-factor, 1));
-  transition: all 0.3s ease;
+  transition: none;
 }
 
 .main-frame.sidebar-open {
-  padding-left: 250px;
+  transform: scale(var(--scale-factor, 1));
 }
 
 .glow-effect-1 {
@@ -520,7 +513,7 @@ body {
   position: absolute;
   width: 461px;
   height: 27px;
-  left: 350px;
+  left: 267px;
   top: 24px;
   font-family: 'Inter';
   font-style: normal;
@@ -528,11 +521,16 @@ body {
   font-size: 24px;
   line-height: 29px;
   color: #FFFFFF;
+  transition: left 0.3s ease;
+}
+
+.main-frame.sidebar-open .title {
+  left: 517px;
 }
 
 .slash-button {
   position: absolute;
-  left: 800px;
+  left: 758px;
   top: 523px;
   width: 30px;
   height: 30px;
@@ -546,8 +544,12 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1000;
+  transition: left 0.3s ease;
+  z-index: 1002;
+}
+
+.main-frame.sidebar-open .slash-button {
+  left: 1008px;
 }
 
 .slash-button:hover {
@@ -673,19 +675,19 @@ body {
 }
 
 .dashboard-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>');
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>');
 }
 
 .clients-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M16 7c0-2.21-1.79-4-4-4S8 4.79 8 7s1.79 4 4 4 4-1.79 4-4zm-4 6c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/></svg>');
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>');
 }
 
 .messages-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>');
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v-2m0 0V5a2 2 0 012-2h6l2 2h6a2 2 0 012 2v1M3 7l9 6 9-6"/></svg>');
 }
 
 .schedule-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>');
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>');
 }
 
 .page5-icon {
@@ -722,17 +724,40 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-.sidebar-footer {
-  padding: 20px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
 .content-wrapper {
   flex: 1;
   position: relative;
-  transition: all 0.3s ease;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}content-wrapper {
+  flex: 1;
+  position: relative;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+
+.main-frame.sidebar-open .content-wrapper {
+  transform: translateX(250px);
 }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
