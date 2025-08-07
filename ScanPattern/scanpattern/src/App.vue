@@ -14,19 +14,29 @@
 
       <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
         <div class="sidebar-header">
-          <div class="logo">3DP</div>
+          <div class="logo-section">
+            <div class="logo">3DP</div>
+            <div class="logo-subtitle">Scan Pattern</div>
+          </div>
           <button class="sidebar-close" @click="toggleSidebar">×</button>
         </div>
         
         <div class="sidebar-menu">
-          <div 
-            v-for="(item, index) in menuItems" 
+          <div
+            v-for="(item, index) in menuItems"
             :key="index + 1"
             :class="['sidebar-item', { active: currentPage === index + 1 }]"
             @click="switchPage(index + 1)"
           >
             <div :class="['sidebar-icon', item.icon]"></div>
             <span class="sidebar-text">{{ item.text }}</span>
+          </div>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="footer-info">
+            <div class="version">v1.0.0</div>
+            <div class="copyright">© 2025 HBNU</div>
           </div>
         </div>
       </div>
@@ -473,8 +483,8 @@ html, body {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background: #000000;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #F8F9FA;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
@@ -486,7 +496,7 @@ body {
   width: 100vw;
   height: 100vh;
   display: flex;
-  background: #262525;
+  background: #F8F9FA;
   overflow: hidden;
   transform-origin: center center;
   transform: scale(var(--scale-factor, 1));
@@ -525,13 +535,15 @@ body {
   height: 27px;
   left: 267px;
   top: 24px;
-  font-family: 'Inter';
+  font-family: 'Inter', sans-serif;
   font-style: normal;
-  font-weight: 900;
+  font-weight: 700;
   font-size: 24px;
   line-height: 29px;
-  color: #FFFFFF;
+  color: #1A1A1A;
+  letter-spacing: -0.02em;
   transition: left 0.3s ease;
+  z-index: 100;
 }
 
 .main-frame.sidebar-open .title {
@@ -540,36 +552,37 @@ body {
 
 .slash-button {
   position: absolute;
-  left: 230px;
-  top: 538px;
-  width: 30px;
-  height: 26px;
-  background: #7B20E2;
-  border: 2px solid #7B20E2;
-  border-radius: 6px;
+  left: 255px;
+  top: 543px;
+  width: 36px;
+  height: 36px;
+  background: #007BFF;
+  border: none;
+  border-radius: 8px;
   color: #FFFFFF;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: left 0.3s ease;
+  transition: all 0.2s ease;
   z-index: 1002;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
 }
 
 .main-frame.sidebar-open .slash-button {
-  left: 480px;
+  left: 505px;
 }
 
 .slash-button:hover {
-  background: #8B30F2;
-  border-color: #8B30F2;
-  transform: scale(1.1);
+  background: #0056B3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
 
 .slash-button:active {
-  transform: scale(0.95);
+  transform: translateY(0);
 }
 
 .hamburger-menu {
@@ -606,12 +619,13 @@ body {
   top: 0;
   width: 250px;
   height: 100vh;
-  background: linear-gradient(180deg, #3B4CB8 0%, #2D3E8F 100%);
+  background: #FFFFFF;
+  border-right: 1px solid #E9ECEF;
   transition: left 0.3s ease;
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 16px rgba(0, 0, 0, 0.08);
 }
 
 .sidebar-open {
@@ -619,18 +633,34 @@ body {
 }
 
 .sidebar-header {
-  padding: 30px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 20px;
+  border-bottom: 1px solid #E9ECEF;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: #F8F9FA;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .logo {
-  color: #4ECDC4;
-  font-size: 24px;
-  font-weight: bold;
+  color: #007BFF;
+  font-size: 20px;
+  font-weight: 700;
   font-family: 'Inter', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.logo-subtitle {
+  color: #6C757D;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.02em;
 }
 
 .logo-suffix {
@@ -641,33 +671,34 @@ body {
 
 .sidebar-menu {
   flex: 1;
-  padding: 20px 0;
+  padding: 8px 0;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  padding: 15px 20px;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 20px;
+  color: #495057;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin: 2px 10px;
-  border-radius: 10px;
+  transition: all 0.2s ease;
+  margin: 1px 8px 1px 0;
+  border-radius: 0 8px 8px 0;
   font-size: 14px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
 }
 
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background: #F8F9FA;
+  color: #007BFF;
+  transform: translateX(4px);
 }
 
 .sidebar-item.active {
-  background: #FFFFFF;
-  color: #2D3E8F;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: #E3F2FD;
+  color: #007BFF;
+  border-left: 3px solid #007BFF;
+  font-weight: 600;
 }
 
 .sidebar-icon {
@@ -711,27 +742,50 @@ body {
 .sidebar-close {
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 24px;
+  color: #6C757D;
+  font-size: 20px;
   cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .sidebar-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
+  background: #F8F9FA;
+  color: #495057;
 }
 
 
 .sidebar-text {
   font-family: 'Inter', sans-serif;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #E9ECEF;
+  background: #F8F9FA;
+}
+
+.footer-info {
+  text-align: center;
+}
+
+.version {
+  color: #007BFF;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.copyright {
+  color: #6C757D;
+  font-size: 10px;
+  font-weight: 400;
 }
 
 .content-wrapper {

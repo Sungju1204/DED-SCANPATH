@@ -63,26 +63,31 @@ export default {
 <style scoped>
 .page-content {
   position: relative;
+  background: #F8F9FA;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .code-assignment-container {
   position: absolute;
   width: 653px;
-  height: 280px;
+  min-height: 280px;
   left: 135px;
   top: 100px;
-  background: #1D1D1D;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E9ECEF;
 }
 
 .code-assignment-title {
-  color: #FFFFFF;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  color: #1A1A1A;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .cycle-list-container {
@@ -95,18 +100,20 @@ export default {
 }
 
 .cycle-item {
-  background: #333;
-  border: 2px solid #7B20E2;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 15px;
-  transition: all 0.3s ease;
+  background: #F8F9FA;
+  border: 1px solid #DEE2E6;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .cycle-item:hover {
-  background: #3A3A3A;
+  background: #E9ECEF;
+  border-color: #007BFF;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.15);
 }
 
 .cycle-header {
@@ -117,29 +124,32 @@ export default {
 }
 
 .cycle-name {
-  color: #7B20E2;
+  color: #007BFF;
   font-size: 16px;
   font-weight: 600;
 }
 
 .cycle-date {
-  color: #666;
+  color: #6C757D;
   font-size: 12px;
 }
 
 .cycle-delete-btn {
-  background: #e74c3c;
+  background: #DC3545;
   color: #FFFFFF;
   border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 10px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .cycle-delete-btn:hover {
-  background: #c0392b;
+  background: #C82333;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
 }
 
 .empty-cycle-message {

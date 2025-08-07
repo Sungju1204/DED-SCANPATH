@@ -100,26 +100,32 @@ export default {
 <style scoped>
 .page-content {
   position: relative;
+  background: #F8F9FA;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .code-assignment-container {
   position: absolute;
   width: 653px;
-  height: 380px;
+  min-height: 200px;
   left: 135px;
   top: 100px;
-  background: #1D1D1D;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E9ECEF;
+  max-width: calc(100vw - 600px);
 }
 
 .code-assignment-title {
-  color: #FFFFFF;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  color: #1A1A1A;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 
@@ -137,72 +143,80 @@ export default {
 
 .toggle-button {
   flex: 1;
-  padding: 10px 12px;
-  background: #444;
+  padding: 12px 16px;
+  background: #007BFF;
   color: #FFFFFF;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .toggle-button:hover {
-  background: #555;
+  background: #0056B3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
 .toggle-button.active {
-  background: #7B20E2;
+  background: #0056B3;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
 
 
 .button-list {
-  margin-bottom: 15px;
-  padding: 10px;
-  background: #262525;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #FFFFFF;
   border-radius: 8px;
-  border: 1px solid #555;
+  border: 1px solid #E9ECEF;
 }
 
 .button-item {
   display: inline-block;
-  background: #333;
-  color: #FFFFFF;
-  padding: 8px 16px;
-  margin: 5px;
-  border-radius: 6px;
+  background: #F8F9FA;
+  color: #495057;
+  padding: 10px 16px;
+  margin: 6px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  border: 1px solid #DEE2E6;
   position: relative;
 }
 
 .button-item:hover {
-  background: #444;
-  border-color: #7B20E2;
+  background: #E9ECEF;
+  border-color: #007BFF;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.2);
 }
 
 .button-item.selected {
-  background: #7B20E2;
-  border-color: #7B20E2;
+  background: #007BFF;
+  border-color: #007BFF;
+  color: #FFFFFF;
+  font-weight: 600;
 }
 
 
 
 .selected-button-display {
-  color: #7B20E2;
+  color: #007BFF;
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
   text-align: center;
-  padding: 10px;
-  background: #262525;
+  padding: 16px;
+  background: #F8F9FA;
   border-radius: 8px;
-  border: 2px solid #7B20E2;
+  border: 1px solid #E9ECEF;
+  letter-spacing: -0.01em;
 }
 </style> 

@@ -162,34 +162,39 @@ export default {
 <style scoped>
 .page-content {
   position: relative;
+  background: #F8F9FA;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 .code-assignment-container {
   position: absolute;
   width: 653px;
-  height: 450px;
+  min-height: 450px;
   left: 135px;
   top: 100px;
-  background: #1D1D1D;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #E9ECEF;
 }
 
 .code-assignment-title {
-  color: #FFFFFF;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  color: #1A1A1A;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .printing-settings-section {
   margin-bottom: 20px;
-  padding: 15px;
-  background: #333;
-  border-radius: 10px;
-  border: 2px solid #444;
+  padding: 16px;
+  background: #F8F9FA;
+  border-radius: 8px;
+  border: 1px solid #E9ECEF;
 }
 
 .settings-group {
@@ -204,7 +209,7 @@ export default {
 
 .setting-item label {
   display: block;
-  color: #7B20E2;
+  color: #495057;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -213,17 +218,18 @@ export default {
 .setting-item input {
   width: 100%;
   padding: 10px 12px;
-  background: #1D1D1D;
-  border: 1px solid #555;
+  background: #FFFFFF;
+  border: 1px solid #DEE2E6;
   border-radius: 6px;
-  color: #FFFFFF;
+  color: #495057;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
 }
 
 .setting-item input:focus {
   outline: none;
-  border-color: #7B20E2;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .feeder-selection {
@@ -231,7 +237,7 @@ export default {
 }
 
 .setting-title {
-  color: #7B20E2;
+  color: #495057;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -247,38 +253,38 @@ export default {
   align-items: center;
   cursor: pointer;
   padding: 8px 12px;
-  background: #1D1D1D;
-  border: 1px solid #555;
+  background: #FFFFFF;
+  border: 1px solid #DEE2E6;
   border-radius: 6px;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .feeder-option:hover {
-  background: #2A2A2A;
-  border-color: #7B20E2;
+  background: #F8F9FA;
+  border-color: #007BFF;
 }
 
 .feeder-option input[type="radio"] {
   margin-right: 8px;
-  accent-color: #7B20E2;
+  accent-color: #007BFF;
 }
 
 .feeder-label {
-  color: #FFFFFF;
+  color: #495057;
   font-size: 14px;
   font-weight: 500;
 }
 
 .cycle-selection-section {
   margin-bottom: 20px;
-  padding: 15px;
-  background: #333;
-  border-radius: 10px;
-  border: 2px solid #444;
+  padding: 16px;
+  background: #F8F9FA;
+  border-radius: 8px;
+  border: 1px solid #E9ECEF;
 }
 
 .section-title {
-  color: #7B20E2;
+  color: #495057;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -287,17 +293,18 @@ export default {
 .cycle-dropdown select {
   width: 100%;
   padding: 10px 12px;
-  background: #1D1D1D;
-  border: 1px solid #555;
+  background: #FFFFFF;
+  border: 1px solid #DEE2E6;
   border-radius: 6px;
-  color: #FFFFFF;
+  color: #495057;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
 }
 
 .cycle-dropdown select:focus {
   outline: none;
-  border-color: #7B20E2;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .generate-section {
@@ -306,7 +313,7 @@ export default {
 
 .generate-button {
   padding: 15px 30px;
-  background: #7B20E2;
+  background: #007BFF;
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
@@ -314,15 +321,16 @@ export default {
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .generate-button:hover {
-  background: #8B30F2;
+  background: #0056B3;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
 }
 
 .generate-button:active {
-  transform: translateY(0px);
+  transform: translateY(0);
 }
 </style> 

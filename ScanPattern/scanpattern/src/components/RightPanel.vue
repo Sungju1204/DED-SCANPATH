@@ -89,20 +89,22 @@ export default {
   height: 604px;
   left: 850px;
   top: 44px;
-  background: #1D1D1D;
-  box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
-  border-radius: 17px;
-  padding: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E9ECEF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
 }
 
 .right-panel-title {
-  color: #FFFFFF;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 15px;
+  color: #1A1A1A;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 20px;
   text-align: center;
+  letter-spacing: -0.02em;
 }
 
 .text-area-container {
@@ -113,60 +115,64 @@ export default {
 
 .text-area {
   flex: 1;
-  background: #262525;
-  border: 2px solid #333;
-  border-radius: 10px;
-  padding: 15px;
-  color: #FFFFFF;
+  background: #F8F9FA;
+  border: 1px solid #DEE2E6;
+  border-radius: 8px;
+  padding: 16px;
+  color: #495057;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   resize: none;
   outline: none;
-  transition: border-color 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .text-area:focus {
-  border-color: #7B20E2;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .text-area::placeholder {
-  color: #666;
+  color: #6C757D;
 }
 
 .button-container {
-  margin-top: 15px;
+  margin-top: 20px;
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .action-button {
   flex: 1;
-  padding: 10px;
-  background: #7B20E2;
+  padding: 12px 16px;
+  background: #007BFF;
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .action-button:hover {
-  background: #8B30F2;
+  background: #0056B3;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
 .action-button:active {
-  transform: translateY(0px);
+  transform: translateY(0);
 }
 
 .clear-button {
-  background: #444;
+  background: #6C757D;
 }
 
 .clear-button:hover {
-  background: #555;
+  background: #5A6268;
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
 }
 </style> 
