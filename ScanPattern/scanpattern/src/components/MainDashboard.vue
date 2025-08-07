@@ -169,7 +169,7 @@
                   type="checkbox"
                   :checked="selectedForDeletion.includes(button)"
                   class="delete-checkbox"
-                  @click.stop
+                  @click.stop="toggleDeleteSelection(button)"
                 >
                 {{ button }}
               </div>

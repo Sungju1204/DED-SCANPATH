@@ -33,7 +33,7 @@
 
       <div class="content-wrapper">
         <!-- Page 1: Main Dashboard -->
-        <MainDashboard 
+        <MainDashboard
           v-show="currentPage === 1"
           :selected-items="selectedItems"
           :custom-button-lists="customButtonLists"
@@ -41,6 +41,7 @@
           @remove-item="removeFromBottomPanel"
           @add-button="addButton"
           @clear-all-items="clearAllItems"
+          @delete-buttons="deleteButtons"
         />
 
         <!-- Page 2: Code Assignment -->
@@ -124,8 +125,7 @@ export default {
         { text: '사이클 생성', icon: 'dashboard-icon' },
         { text: '코드 할당', icon: 'clients-icon' },
         { text: '사이클 관리', icon: 'messages-icon' },
-        { text: '코드 파일 생성', icon: 'schedule-icon' },
-        { text: 'PAGE 5', icon: 'page5-icon' }
+        { text: '코드 파일 생성', icon: 'schedule-icon' }
       ],
       
       // Text area data
@@ -427,7 +427,12 @@ export default {
         if (this.customButtonLists['테스트1']) {
           delete this.customButtonLists['테스트1']
         }
+        // 사용자가 추가한 C2 제거
+        if (this.customButtonLists['C'] && this.customButtonLists['C'].includes('C2')) {
+          this.customButtonLists['C'] = this.customButtonLists['C'].filter(button => button !== 'C2')
+        }
         this.updateAllButtonsArray()
+        this.saveData() // 변경사항 저장
       }
     },
     
