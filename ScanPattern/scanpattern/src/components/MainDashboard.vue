@@ -5,7 +5,10 @@
       <div class="button-section">
         <div class="section-header">
           <div class="section-title">C 버튼 목록</div>
-          <button class="add-button-btn-small" @click="showModal = true">+</button>
+          <div class="header-buttons">
+            <button class="add-button-btn-small" @click="showAddModalForList('C')">+</button>
+            <button class="trash-button-small" @click="showDeleteModalForList('C')">🗑️</button>
+          </div>
         </div>
         <div class="button-scroll-container">
           <div class="grid-row">
@@ -38,7 +41,10 @@
       <div class="button-section">
         <div class="section-header">
           <div class="section-title">F 버튼 목록</div>
-          <button class="add-button-btn-small" @click="showModal = true">+</button>
+          <div class="header-buttons">
+            <button class="add-button-btn-small" @click="showAddModalForList('F')">+</button>
+            <button class="trash-button-small" @click="showDeleteModalForList('F')">🗑️</button>
+          </div>
         </div>
         <div class="button-scroll-container">
           <div class="grid-row">
@@ -109,31 +115,67 @@
       </div>
     </div>
 
-    <!-- 모달창 -->
-    <div v-if="showModal" class="modal-overlay" @click="showModal = false">
+    <!-- 추가 모달창 -->
+    <div v-if="showAddModal" class="modal-overlay" @click="showAddModal = false">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h3>새 버튼 추가</h3>
-          <button class="modal-close" @click="showModal = false">×</button>
+          <h3>{{ currentList }} 버튼 추가</h3>
+          <button class="modal-close" @click="showAddModal = false">×</button>
         </div>
         <div class="modal-body">
-          <div class="button-management-section">
-            <div class="add-button-section">
-              <div class="section-title">새 버튼 추가</div>
-              <div class="add-button-input">
-                <select v-model="selectedListForButton">
-                  <option value="">목록 선택</option>
-                  <option value="C">C</option>
-                  <option value="F">F</option>
-                </select>
-                <input 
-                  v-model="newButtonName" 
-                  type="text" 
-                  placeholder="버튼 이름 (예: C5, F5...)" 
-                  maxlength="10"
+          <div class="add-button-section">
+            <div class="section-title">새 버튼 추가</div>
+            <div class="add-button-input">
+              <input
+                v-model="newButtonName"
+                type="text"
+                :placeholder="`버튼 이름 (예: ${currentList}5, ${currentList}6...)`"
+                maxlength="10"
+              >
+              <button @click="addButton">버튼 추가</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 삭제 모달창 -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ currentList }} 버튼 삭제</h3>
+          <button class="modal-close" @click="showDeleteModal = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="button-list-section">
+            <div class="section-title">삭제할 버튼 선택</div>
+            <div class="button-controls">
+              <button
+                v-if="selectedForDeletion.length > 0"
+                class="delete-confirm-button"
+                @click="deleteSelectedButtons"
+              >
+                선택된 버튼 삭제 ({{ selectedForDeletion.length }}개)
+              </button>
+            </div>
+            <div class="button-list">
+              <div
+                v-for="button in deletableButtons"
+                :key="button"
+                :class="['button-item', 'delete-mode', { 'selected': selectedForDeletion.includes(button) }]"
+                @click="toggleDeleteSelection(button)"
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedForDeletion.includes(button)"
+                  class="delete-checkbox"
+                  @click.stop
                 >
-                <button @click="addButton">버튼 추가</button>
+                {{ button }}
               </div>
+            </div>
+            <div v-if="deletableButtons.length === 0" class="no-buttons-message">
+              삭제할 수 있는 버튼이 없습니다.
             </div>
           </div>
         </div>
@@ -157,9 +199,15 @@ export default {
   },
   data() {
     return {
-      showModal: false,
+      showAddModal: false,
+      showDeleteModal: false,
       newButtonName: '',
-      selectedListForButton: ''
+      currentList: '',
+      selectedForDeletion: [],
+      defaultButtons: {
+        C: ['C1', 'C2', 'C3', 'C4'],
+        F: ['F1', 'F2', 'F3', 'F4']
+      }
     }
   },
   computed: {
@@ -171,9 +219,14 @@ export default {
         }
       })
       return otherLists
+    },
+    deletableButtons() {
+      if (!this.currentList) return []
+      // 기본 버튼은 삭제할 수 없으므로 사용자 추가 버튼만 반환
+      return this.customButtonLists[this.currentList] || []
     }
   },
-  emits: ['add-item', 'remove-item', 'add-button', 'clear-all-items'],
+  emits: ['add-item', 'remove-item', 'add-button', 'clear-all-items', 'delete-buttons'],
   methods: {
     addToBottomPanel(itemName) {
       this.$emit('add-item', itemName)
@@ -186,25 +239,65 @@ export default {
         this.$emit('clear-all-items')
       }
     },
+    showAddModalForList(listType) {
+      this.currentList = listType
+      this.showAddModal = true
+    },
+    showDeleteModalForList(listType) {
+      this.currentList = listType
+      this.selectedForDeletion = []
+      this.showDeleteModal = true
+    },
     addButton() {
-      const selectedList = this.selectedListForButton
+      const selectedList = this.currentList
       const buttonName = this.newButtonName.trim().toUpperCase()
-      
-      if (!selectedList) {
-        alert('목록을 선택해주세요.')
-        return
-      }
-      
+
       if (!buttonName) {
         alert('버튼 이름을 입력해주세요.')
         return
       }
-      
+
+      // 기본 버튼과 중복 검사
+      if (this.defaultButtons[selectedList] && this.defaultButtons[selectedList].includes(buttonName)) {
+        alert(`"${buttonName}"은 기본 버튼 이름입니다. 다른 이름을 사용해주세요.`)
+        return
+      }
+
+      // 사용자 추가 버튼과 중복 검사
+      if (this.customButtonLists[selectedList] && this.customButtonLists[selectedList].includes(buttonName)) {
+        alert(`"${buttonName}"은 이미 존재하는 버튼입니다. 다른 이름을 사용해주세요.`)
+        return
+      }
+
       this.$emit('add-button', { selectedList, buttonName })
       this.newButtonName = ''
-      this.selectedListForButton = ''
-      this.showModal = false
+      this.currentList = ''
+      this.showAddModal = false
       alert(`버튼 "${buttonName}"이 목록 "${selectedList}"에 추가되었습니다.`)
+    },
+    toggleDeleteSelection(button) {
+      const index = this.selectedForDeletion.indexOf(button)
+      if (index > -1) {
+        this.selectedForDeletion.splice(index, 1)
+      } else {
+        this.selectedForDeletion.push(button)
+      }
+    },
+    deleteSelectedButtons() {
+      if (this.selectedForDeletion.length === 0) {
+        alert('삭제할 버튼을 선택해주세요.')
+        return
+      }
+
+      if (confirm(`선택된 ${this.selectedForDeletion.length}개의 버튼을 삭제하시겠습니까?`)) {
+        this.$emit('delete-buttons', {
+          listType: this.currentList,
+          buttons: this.selectedForDeletion
+        })
+        this.selectedForDeletion = []
+        this.showDeleteModal = false
+        alert('선택된 버튼들이 삭제되었습니다.')
+      }
     }
   }
 }
@@ -231,9 +324,14 @@ export default {
 .section-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
   padding-left: 5px;
-  gap: 15px;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 .section-title {
@@ -363,6 +461,33 @@ export default {
 }
 
 .add-button-btn-small:active {
+  transform: scale(0.95);
+}
+
+.trash-button-small {
+  padding: 4px 8px;
+  background: #E74C3C;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trash-button-small:hover {
+  background: #C0392B;
+  transform: scale(1.1);
+}
+
+.trash-button-small:active {
   transform: scale(0.95);
 }
 
@@ -521,7 +646,7 @@ export default {
   color: #FFFFFF;
 }
 
-.button-management-section {
+.add-button-section {
   margin-bottom: 20px;
   padding: 15px;
   background: #333;
@@ -529,8 +654,11 @@ export default {
   border: 2px solid #444;
 }
 
-.add-button-section {
-  margin-bottom: 15px;
+.button-list-section {
+  padding: 15px;
+  background: #333;
+  border-radius: 10px;
+  border: 2px solid #444;
 }
 
 .section-title {
@@ -582,6 +710,110 @@ export default {
 
 .add-button-input button:active {
   transform: translateY(1px);
+}
+
+.button-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.trash-button {
+  padding: 6px 12px;
+  background: #E74C3C;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.trash-button:hover {
+  background: #C0392B;
+}
+
+.trash-button.active {
+  background: #C0392B;
+  transform: scale(1.05);
+}
+
+.delete-confirm-button {
+  padding: 6px 12px;
+  background: #FF6B6B;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-confirm-button:hover {
+  background: #FF5252;
+}
+
+.button-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button-item {
+  display: inline-block;
+  background: #444;
+  color: #FFFFFF;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.button-item:hover {
+  background: #555;
+  border-color: #7B20E2;
+}
+
+.button-item.delete-mode {
+  cursor: pointer;
+}
+
+.button-item.delete-mode:hover {
+  background: #E74C3C;
+  border-color: #E74C3C;
+}
+
+.delete-checkbox {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.button-item.selected {
+  background: #E74C3C;
+  border-color: #E74C3C;
+  color: #FFFFFF;
+}
+
+.no-buttons-message {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  padding: 20px;
+  font-style: italic;
 }
 </style> 
 
