@@ -4,7 +4,7 @@
       <div class="glow-effect-2"></div>
       
       <div class="title">HBNU_DED M250 Scan Pattern</div>
-      <div v-show="currentPage === 1" class="slash-button" @click="addToBottomPanel('/')">/</div>
+      <div v-show="currentPage === 1 && selectedItems.length > 0" class="slash-button" @click="addToBottomPanel('/')">/</div>
       
       <div class="hamburger-menu" @click="toggleSidebar" :class="{ 'hidden': sidebarOpen }">
         <div class="hamburger-line"></div>
@@ -535,10 +535,10 @@ body {
 
 .slash-button {
   position: absolute;
-  left: 758px;
-  top: 523px;
+  left: 230px;
+  top: 538px;
   width: 30px;
-  height: 30px;
+  height: 26px;
   background: #7B20E2;
   border: 2px solid #7B20E2;
   border-radius: 6px;
@@ -554,7 +554,7 @@ body {
 }
 
 .main-frame.sidebar-open .slash-button {
-  left: 1008px;
+  left: 480px;
 }
 
 .slash-button:hover {
@@ -746,31 +746,6 @@ body {
   transform: translateX(250px);
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

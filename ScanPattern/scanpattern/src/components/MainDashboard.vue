@@ -97,13 +97,15 @@
       <div class="bottom-panel-header" v-if="selectedItems.length > 0">
         <button class="clear-all-button" @click="clearAllItems">전체 삭제</button>
       </div>
-      <div 
-        v-for="item in selectedItems" 
-        :key="item.id"
-        class="bottom-item"
-        @click="removeFromBottomPanel(item.id)"
-      >
-        {{ item.name }}
+      <div class="bottom-panel-content">
+        <div 
+          v-for="item in selectedItems" 
+          :key="item.id"
+          class="bottom-item"
+          @click="removeFromBottomPanel(item.id)"
+        >
+          {{ item.name }}
+        </div>
       </div>
     </div>
 
@@ -367,40 +369,54 @@ export default {
 .bottom-panel {
   position: absolute;
   width: 653px;
-  height: 125px;
+  min-height: 125px;
   left: 135px;
   top: 523px;
   background: #1D1D1D;
   box-shadow: 0px 4px 8px 2px rgba(0, 0, 0, 0.25);
   border-radius: 20px;
   padding: 15px;
-  overflow-y: auto;
   max-width: calc(100vw - 600px);
+}
+
+.bottom-panel::-webkit-scrollbar {
+  display: none;
+}
+
+.bottom-panel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .bottom-panel-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   margin-bottom: 10px;
   padding-bottom: 10px;
   border-bottom: 1px solid #333;
+  padding-right: 20px;
 }
 
 .clear-all-button {
   padding: 6px 12px;
   background: #E74C3C;
   color: #FFFFFF;
-  border: none;
+  border: 2px solid #E74C3C;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .clear-all-button:hover {
   background: #C0392B;
+  border-color: #C0392B;
   transform: scale(1.05);
 }
 
@@ -568,6 +584,12 @@ export default {
   transform: translateY(1px);
 }
 </style> 
+
+
+
+
+
+
 
 
 
