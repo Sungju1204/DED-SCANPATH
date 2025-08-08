@@ -6,6 +6,7 @@
         :value="content"
         class="text-area" 
         :placeholder="placeholder"
+        :readonly="readonly"
         @input="onInput"
       ></textarea>
       <div class="button-container">
@@ -55,6 +56,10 @@ export default {
       default: false
     },
     showSaveCode: {
+      type: Boolean,
+      default: false
+    },
+    readonly: {
       type: Boolean,
       default: false
     }

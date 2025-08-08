@@ -52,6 +52,7 @@
           @add-button="addButton"
           @clear-all-items="clearAllItems"
           @delete-buttons="deleteButtons"
+          @show-button-code="showButtonCode"
         />
 
         <!-- Page 2: Code Assignment -->
@@ -63,6 +64,7 @@
           @add-button="addButton"
           @select-button="selectButton"
           @delete-buttons="deleteButtons"
+          @show-button-code="showButtonCode"
         />
 
         <!-- Page 3: Cycle Management -->
@@ -95,6 +97,7 @@
           :placeholder="textAreaPlaceholder"
           :show-save-cycle="currentPage === 1"
           :show-save-code="currentPage === 2"
+          :readonly="currentPage === 1"
           @update:content="textAreaContent = $event"
           @save-cycle="saveCycle"
           @save-code="saveCode"
@@ -110,6 +113,7 @@ import CodeAssignment from './components/CodeAssignment.vue'
 import CycleManagement from './components/CycleManagement.vue'
 import PrintingCodeGenerator from './components/PrintingCodeGenerator.vue'
 import RightPanel from './components/RightPanel.vue'
+import gcodes from './constants/gcodes.js'
 
 export default {
   name: 'App',
@@ -125,7 +129,16 @@ export default {
       currentPage: 1,
       selectedItems: [],
       savedCycles: [],
-      buttonCodes: {},
+      buttonCodes: {
+        C1: gcodes.C1,
+        C2: gcodes.C2,
+        C3: gcodes.C3,
+        C4: gcodes.C4,
+        F1: gcodes.F1,
+        F2: gcodes.F2,
+        F3: gcodes.F3,
+        F4: gcodes.F4,
+      },
       selectedButton: null,
       customButtonLists: {},
       allButtons: ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4'],
@@ -158,7 +171,7 @@ export default {
       const uniqueId = `${itemName}_${timestamp}`
       
       this.selectedItems.push({ id: uniqueId, name: itemName })
-      this.updateNCCode()
+      // updateNCCode() 호출 제거 - showButtonCode()에서 처리
     },
     
     removeFromBottomPanel(itemId) {
@@ -180,6 +193,25 @@ export default {
         }
       })
       this.textAreaContent = ncCode
+    },
+    
+    showButtonCode(buttonName) {
+      // 버튼 클릭 시 해당 버튼의 코드를 기존 코드에 누적하여 표시
+      if (this.buttonCodes[buttonName]) {
+        // 기존 코드가 있으면 줄바꿈을 추가하고 새 코드를 누적
+        if (this.textAreaContent && this.textAreaContent.trim() !== '') {
+          this.textAreaContent += '\n\n' + this.buttonCodes[buttonName]
+        } else {
+          this.textAreaContent = this.buttonCodes[buttonName]
+        }
+      } else {
+        // 코드가 없는 경우 기존 코드에 안내 메시지 추가
+        if (this.textAreaContent && this.textAreaContent.trim() !== '') {
+          this.textAreaContent += '\n\n' + `// ${buttonName} 버튼에 할당된 코드가 없습니다.`
+        } else {
+          this.textAreaContent = `// ${buttonName} 버튼에 할당된 코드가 없습니다.`
+        }
+      }
     },
     
     updateTextAreaForPage(pageNumber) {
@@ -427,7 +459,19 @@ export default {
       
       const buttonCodes = localStorage.getItem('buttonCodes')
       if (buttonCodes) {
-        this.buttonCodes = JSON.parse(buttonCodes)
+        const savedButtonCodes = JSON.parse(buttonCodes)
+        // 기본 버튼 코드들은 항상 gcodes에서 가져오고, 사용자 추가 코드만 localStorage에서 복원
+        this.buttonCodes = {
+          C1: gcodes.C1,
+          C2: gcodes.C2,
+          C3: gcodes.C3,
+          C4: gcodes.C4,
+          F1: gcodes.F1,
+          F2: gcodes.F2,
+          F3: gcodes.F3,
+          F4: gcodes.F4,
+          ...savedButtonCodes // 사용자 추가 코드들
+        }
       }
       
       const customButtonLists = localStorage.getItem('customButtonLists')

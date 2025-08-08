@@ -92,6 +92,8 @@ export default {
   methods: {
     selectButton(button) {
       this.$emit('select-button', button)
+      // 버튼 클릭 시 해당 버튼의 코드만 text-area에 표시
+      this.$emit('show-button-code', button)
     }
   }
 }
