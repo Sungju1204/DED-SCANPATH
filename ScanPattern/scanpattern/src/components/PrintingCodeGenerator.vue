@@ -51,10 +51,22 @@
               placeholder="850"
             >
           </div>
+          <div class="setting-item">
+            <label for="includeComments">주석 포함</label>
+            <input 
+              v-model="printingSettings.includeComments"
+              type="checkbox"
+              id="includeComments"
+            >
+            <span class="checkbox-label">NC 코드에 주석 포함</span>
+          </div>
         </div>
         
         <div class="feeder-selection">
           <div class="setting-title">Feeder 선택</div>
+          <div class="feeder-info">
+            <p class="feeder-description">피더 선택에 따라 NC 코드의 M60/M70, M61/M71, M62/M72 코드가 변경됩니다.</p>
+          </div>
           <div class="feeder-options">
             <label 
               v-for="feeder in 3" 
@@ -66,7 +78,7 @@
                 :value="feeder" 
                 v-model="printingSettings.selectedFeeder"
               >
-              <span class="feeder-label">Feeder {{ feeder }}</span>
+              <span class="feeder-label">피더{{ feeder }} (M{{ 59 + feeder }}/M{{ 69 + feeder }})</span>
             </label>
           </div>
         </div>
@@ -88,6 +100,10 @@
               </span>
             </option>
           </select>
+        </div>
+        <div v-if="selectedCycleIndex === ''" class="cycle-info">
+          <p>사이클을 선택하면 해당 사이클의 버튼들을 기반으로 NC 코드를 생성합니다.</p>
+          <p>프로그램 헤더 - [레이어 변경] - [선택된 사이클 버튼들] - 프로그램 푸터 구조로 생성됩니다.</p>
         </div>
       </div>
       
@@ -121,14 +137,15 @@ export default {
         dwellTime: 3500,
         target: 5.0,
         scanSpeed: 850,
-        selectedFeeder: 1
+        selectedFeeder: 1,
+        includeComments: true
       },
       selectedCycleIndex: ''
     }
   },
   methods: {
     generateCode() {
-      const { layerThickness, dwellTime, target, selectedFeeder } = this.printingSettings
+      const { layerThickness, dwellTime, target, selectedFeeder, includeComments } = this.printingSettings
       
       if (!layerThickness || !dwellTime || !target) {
         alert('Layer Thickness, Dwell Time, Target을 모두 입력해주세요.')
@@ -146,13 +163,16 @@ export default {
         return
       }
       
+      console.log('PrintingCodeGenerator에서 피더 선택:', selectedFeeder)
+      
       this.$emit('generate-code', {
         layerThickness,
         dwellTime,
         target,
-        selectedFeeder,
+        selectedFeeder: parseInt(selectedFeeder),
         selectedCycle,
-        scanSpeed: this.printingSettings.scanSpeed
+        scanSpeed: this.printingSettings.scanSpeed,
+        includeComments
       })
     }
   }
@@ -232,6 +252,17 @@ export default {
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
+.setting-item input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.checkbox-label {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .feeder-selection {
   margin-top: 15px;
 }
@@ -275,6 +306,21 @@ export default {
   font-weight: 500;
 }
 
+.feeder-info {
+  margin-bottom: 12px;
+}
+
+.feeder-description {
+  color: #6C757D;
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
+  background: #E3F2FD;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #007BFF;
+}
+
 .cycle-selection-section {
   margin-bottom: 20px;
   padding: 16px;
@@ -289,6 +335,8 @@ export default {
   font-weight: 600;
   margin-bottom: 8px;
 }
+
+
 
 .cycle-dropdown select {
   width: 100%;
@@ -305,6 +353,25 @@ export default {
   outline: none;
   border-color: #007BFF;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.cycle-info {
+  padding: 12px;
+  background: #E3F2FD;
+  border: 1px solid #BBDEFB;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.cycle-info p {
+  color: #1976D2;
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.cycle-info p:last-child {
+  margin-bottom: 0;
 }
 
 .generate-section {

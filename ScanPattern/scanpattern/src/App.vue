@@ -353,103 +353,122 @@ export default {
       this.saveData()
     },
     
-    generate3DPrintingCode({ layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed }) {
-      const generatedCode = this.generateCodeContent(layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed)
+    generate3DPrintingCode({ layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed, includeComments }) {
+      console.log('피더 선택:', selectedFeeder)
+      const generatedCode = this.generateCodeContent(layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed, includeComments)
       this.textAreaContent = generatedCode
-      alert('3D 프린팅 코드가 생성되었습니다.')
+      alert(`3D 프린팅 코드가 생성되었습니다. (선택된 피더: ${selectedFeeder})`)
     },
     
-    generateCodeContent(layerThickness, dwellTime, target, feeder, cycle, scanSpeed) {
-      if (!cycle.selectedItems || cycle.selectedItems.length === 0) {
-        return cycle.content
-      }
+    generateCodeContent(layerThickness, dwellTime, target, feeder, cycle, scanSpeed, includeComments = true) {
+      console.log('generateCodeContent 호출됨:', { layerThickness, dwellTime, target, feeder, cycle, scanSpeed, includeComments })
       
-      const items = cycle.selectedItems.map(item => item.name)
-      const groups = []
-      let currentGroup = []
+      // 총 레이어 수 계산
+      const totalLayers = Math.ceil(target / layerThickness)
       
-      for (let i = 0; i < items.length; i++) {
-        if (items[i] === '/') {
-          if (currentGroup.length > 0) {
-            groups.push(currentGroup)
-            currentGroup = []
-          }
-        } else {
-          currentGroup.push(items[i])
-        }
-      }
-      if (currentGroup.length > 0) {
-        groups.push(currentGroup)
-      }
-      
-      if (groups.length <= 1) {
-        return cycle.content
-      }
-      
-      let newCode = ''
-      newCode += 'G90\n'
-      newCode += 'M50\n'
-      newCode += `F${scanSpeed}\n`
-      newCode += 'G54\n'
-      newCode += 'M40\n'
-      newCode += 'M60\n'
-      newCode += `G4 P${dwellTime}\n`
-      newCode += '\n'
-      
-      const thickness = parseFloat(layerThickness)
-      const targetZ = parseFloat(target)
-      let z = 0
-      
-      while (z < targetZ) {
-        groups.forEach((group, groupIndex) => {
-          const zOffset = (z + groupIndex * thickness).toFixed(3)
-          group.forEach((buttonName, buttonIndex) => {
-            if (this.buttonCodes[buttonName]) {
-              let buttonCode = this.buttonCodes[buttonName]
-              const zPattern = /Z([0-9]*\.?[0-9]+)/g
-              buttonCode = buttonCode.replace(zPattern, function(match, zValue) {
-                const newZ = (parseFloat(zValue) + parseFloat(zOffset)).toFixed(3)
-                return `Z${newZ}`
-              })
-              
-              const g4Pattern = /G4 P[0-9]+/g
-              buttonCode = buttonCode.replace(g4Pattern, `G4 P${dwellTime}`)
-              
-              if (buttonIndex === 0 && parseFloat(zOffset) !== 0) {
-                buttonCode = buttonCode.replace(
-                  /(G0 X[0-9.-]+ Y[0-9.-]+ Z[0-9.-]+)\n(G4 P[0-9]+)/g,
-                  `$1\nM51\nM70\nM41\nG4 P${dwellTime}\nM50\nM40\nM60\n$2`
-                )
-              }
-              
-              newCode += buttonCode + '\n'
-            } else {
-              newCode += `; ${buttonName} - No code assigned\n`
-            }
-          })
+      // 선택된 사이클의 버튼 코드들 가져오기
+      let cycleButtonCodes = []
+      if (cycle.selectedItems && cycle.selectedItems.length > 0) {
+        cycleButtonCodes = cycle.selectedItems.map(item => {
+          return this.buttonCodes[item.name] || `; ${item.name} - No code assigned`
         })
-        z += thickness * groups.length
+      } else {
+        // 기본 C1 사이클 템플릿 사용
+        cycleButtonCodes = [this.buttonCodes['C1'] || `; C1 - No code assigned`]
       }
       
-      let codeBody = newCode
-      if (feeder === 2) {
-        codeBody = codeBody.replace(/M60/g, 'M61').replace(/M70/g, 'M71')
-      } else if (feeder === 3) {
-        codeBody = codeBody.replace(/M60/g, 'M62').replace(/M70/g, 'M72')
+      // 피더별 코드 가져오기
+      const feederCodes = {
+        1: { on: 'M60', off: 'M70' },
+        2: { on: 'M61', off: 'M71' },
+        3: { on: 'M62', off: 'M72' }
       }
       
-      codeBody += '\n'
-      codeBody += 'M70\n'
-      codeBody += 'M70\n'
-      codeBody += 'M71\n'
-      codeBody += 'G0 X0.0 Y0.0\n'
-      codeBody += `G4 P${dwellTime}\n`
-      codeBody += 'M90\n'
-      codeBody += 'G53\n'
-      codeBody += 'M30\n'
+      // 피더 값을 숫자로 변환
+      const feederNumber = parseInt(feeder) || 1
+      const selectedFeeder = feederCodes[feederNumber] || feederCodes[1]
+      console.log('피더 매개변수:', feeder)
+      console.log('피더 타입:', typeof feeder)
+      console.log('선택된 피더 코드:', selectedFeeder)
       
-      return codeBody
+      let generatedCode = ''
+      
+      // 1. 프로그램 헤더 생성
+      if (includeComments) {
+        generatedCode += '; === 프로그램 헤더 ===\n'
+      }
+      generatedCode += 'G90\n'
+      generatedCode += 'M50\n'
+      generatedCode += `F${scanSpeed}\n`
+      generatedCode += 'G54\n'
+      generatedCode += 'M40\n'
+      generatedCode += `${selectedFeeder.on}\n`
+      generatedCode += `G4 P${dwellTime}\n`
+      if (includeComments) {
+        generatedCode += '\n'
+      }
+      
+      // 2. 레이어 루프 시작
+      for (let layer = 1; layer <= totalLayers; layer++) {
+        const currentZ = ((layer - 1) * layerThickness).toFixed(3)
+        
+        if (includeComments) {
+          generatedCode += `; === Layer ${layer} (Z = ${currentZ}) ===\n`
+        }
+        
+        // 2-1. 레이어 변경 블록 (첫 번째 레이어 제외)
+        if (layer > 1) {
+          if (includeComments) {
+            generatedCode += '; 레이어 변경 블록\n'
+          }
+          generatedCode += 'M51\n'
+          generatedCode += `${selectedFeeder.off}\n`
+          generatedCode += 'M41\n'
+          generatedCode += `G4 P${dwellTime}\n`
+          generatedCode += 'M50\n'
+          generatedCode += 'M40\n'
+          generatedCode += `${selectedFeeder.on}\n`
+          generatedCode += `G4 P${dwellTime}\n`
+          if (includeComments) {
+            generatedCode += '\n'
+          }
+        }
+        
+        // 2-2. 선택된 사이클의 버튼 코드들을 현재 Z 높이에 맞춰 생성
+        cycleButtonCodes.forEach((buttonCode, index) => {
+          if (includeComments) {
+            generatedCode += `; ${cycle.selectedItems[index]?.name || `Button ${index + 1}`}\n`
+          }
+          
+          // 버튼 코드를 현재 Z 높이에 맞춰 수정
+          let modifiedCode = buttonCode
+            // Z 값 교체
+            .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
+            // G4 P 값 교체
+            .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+          
+          generatedCode += modifiedCode
+          if (includeComments) {
+            generatedCode += '\n\n'
+          } else {
+            generatedCode += '\n'
+          }
+        })
+      }
+      
+      // 3. 프로그램 푸터 생성
+      if (includeComments) {
+        generatedCode += '; === 프로그램 푸터 ===\n'
+      }
+      generatedCode += 'M51\n'
+      generatedCode += `${selectedFeeder.off}\n`
+      generatedCode += 'M41\n'
+      generatedCode += 'M30\n'
+      
+      return generatedCode.trim()
     },
+    
+
     
     loadData() {
       const savedCycles = localStorage.getItem('savedCycles')
