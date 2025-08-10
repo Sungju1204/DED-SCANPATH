@@ -1,110 +1,110 @@
 <template>
-    <div class="main-frame" :class="{ 'sidebar-open': sidebarOpen }">
-      <div class="glow-effect-1"></div>
-      <div class="glow-effect-2"></div>
-      
-      <div class="title">HBNU_DED M250 Scan Pattern</div>
-      <div v-show="currentPage === 1 && selectedItems.length > 0" class="slash-button" @click="addToBottomPanel('/')">/</div>
-      
-      <div class="hamburger-menu" @click="toggleSidebar" :class="{ 'hidden': sidebarOpen }">
-        <div class="hamburger-line"></div>
-        <div class="hamburger-line"></div>
-        <div class="hamburger-line"></div>
+  <div class="main-frame" :class="{ 'sidebar-open': sidebarOpen }">
+    <div class="glow-effect-1"></div>
+    <div class="glow-effect-2"></div>
+    
+    <div class="title">HBNU_DED M250 Scan Pattern</div>
+    <div v-show="currentPage === 1 && selectedItems.length > 0" class="slash-button" @click="addToBottomPanel('/')">/</div>
+    
+    <div class="hamburger-menu" @click="toggleSidebar" :class="{ 'hidden': sidebarOpen }">
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+      <div class="hamburger-line"></div>
+    </div>
+
+    <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
+      <div class="sidebar-header">
+        <div class="logo-section">
+          <div class="logo">3DP</div>
+          <div class="logo-subtitle">Scan Pattern</div>
+        </div>
+        <button class="sidebar-close" @click="toggleSidebar">×</button>
       </div>
-
-      <div :class="['sidebar', { 'sidebar-open': sidebarOpen }]">
-        <div class="sidebar-header">
-          <div class="logo-section">
-            <div class="logo">3DP</div>
-            <div class="logo-subtitle">Scan Pattern</div>
-          </div>
-          <button class="sidebar-close" @click="toggleSidebar">×</button>
-        </div>
-        
-        <div class="sidebar-menu">
-          <div
-            v-for="(item, index) in menuItems"
-            :key="index + 1"
-            :class="['sidebar-item', { active: currentPage === index + 1 }]"
-            @click="switchPage(index + 1)"
-          >
-            <div :class="['sidebar-icon', item.icon]"></div>
-            <span class="sidebar-text">{{ item.text }}</span>
-          </div>
-        </div>
-
-        <div class="sidebar-footer">
-          <div class="footer-info">
-            <div class="version">v1.0.0</div>
-            <div class="copyright">© 2025 HBNU</div>
-          </div>
+      
+      <div class="sidebar-menu">
+        <div
+          v-for="(item, index) in menuItems"
+          :key="index + 1"
+          :class="['sidebar-item', { active: currentPage === index + 1 }]"
+          @click="switchPage(index + 1)"
+        >
+          <div :class="['sidebar-icon', item.icon]"></div>
+          <span class="sidebar-text">{{ item.text }}</span>
         </div>
       </div>
 
-      <div class="content-wrapper">
-        <!-- Page 1: Main Dashboard -->
-        <MainDashboard
-          v-show="currentPage === 1"
-          :selected-items="selectedItems"
-          :custom-button-lists="customButtonLists"
-          @add-item="addToBottomPanel"
-          @remove-item="removeFromBottomPanel"
-          @add-button="addButton"
-          @clear-all-items="clearAllItems"
-          @delete-buttons="deleteButtons"
-          @show-button-code="showButtonCode"
-        />
-
-        <!-- Page 2: Code Assignment -->
-        <CodeAssignment 
-          v-show="currentPage === 2"
-          :custom-button-lists="customButtonLists"
-          :button-codes="buttonCodes"
-          :selected-button="selectedButton"
-          @add-button="addButton"
-          @select-button="selectButton"
-          @delete-buttons="deleteButtons"
-          @show-button-code="showButtonCode"
-        />
-
-        <!-- Page 3: Cycle Management -->
-        <CycleManagement 
-          v-show="currentPage === 3"
-          :saved-cycles="savedCycles"
-          @show-cycle="showCycleContent"
-          @delete-cycle="deleteCycle"
-        />
-
-        <!-- Page 4: 3D Printing Code Generator -->
-        <PrintingCodeGenerator 
-          v-show="currentPage === 4"
-          :saved-cycles="savedCycles"
-          :button-codes="buttonCodes"
-          @generate-code="generate3DPrintingCode"
-        />
-
-        <!-- Page 5: Placeholder -->
-        <div v-show="currentPage === 5" class="page-content">
-          <div class="code-assignment-container">
-            <div class="code-assignment-title">페이지 5</div>
-            <div style="color: #2D3E8F; text-align: center; margin-top: 100px;">준비 중...</div>
-          </div>
+      <div class="sidebar-footer">
+        <div class="footer-info">
+          <div class="version">v1.0.0</div>
+          <div class="copyright">© 2025 HBNU</div>
         </div>
-
-        <RightPanel 
-          :content="textAreaContent"
-          :title="rightPanelTitle"
-          :placeholder="textAreaPlaceholder"
-          :show-save-cycle="currentPage === 1"
-          :show-save-code="currentPage === 2"
-          :readonly="currentPage === 1"
-          @update:content="textAreaContent = $event"
-          @save-cycle="saveCycle"
-          @save-code="saveCode"
-          @clear="clearTextArea"
-        />
       </div>
     </div>
+
+    <div class="content-wrapper">
+      <!-- Page 1: Main Dashboard -->
+      <MainDashboard
+        v-show="currentPage === 1"
+        :selected-items="selectedItems"
+        :custom-button-lists="customButtonLists"
+        @add-item="addToBottomPanel"
+        @remove-item="removeFromBottomPanel"
+        @add-button="handleAddButton"
+        @clear-all-items="clearAllItems"
+        @delete-buttons="handleDeleteButtons"
+        @show-button-code="handleShowButtonCode"
+      />
+
+      <!-- Page 2: Code Assignment -->
+      <CodeAssignment 
+        v-show="currentPage === 2"
+        :custom-button-lists="customButtonLists"
+        :button-codes="buttonCodes"
+        :selected-button="selectedButton"
+        @add-button="handleAddButton"
+        @select-button="handleSelectButton"
+        @delete-buttons="handleDeleteButtons"
+        @show-button-code="handleShowButtonCode"
+      />
+
+      <!-- Page 3: Cycle Management -->
+      <CycleManagement 
+        v-show="currentPage === 3"
+        :saved-cycles="savedCycles"
+        @show-cycle="handleShowCycle"
+        @delete-cycle="handleDeleteCycle"
+      />
+
+      <!-- Page 4: 3D Printing Code Generator -->
+      <PrintingCodeGenerator 
+        v-show="currentPage === 4"
+        :saved-cycles="savedCycles"
+        :button-codes="buttonCodes"
+        @generate-code="handleGenerateCode"
+      />
+
+      <!-- Page 5: Placeholder -->
+      <div v-show="currentPage === 5" class="page-content">
+        <div class="code-assignment-container">
+          <div class="code-assignment-title">페이지 5</div>
+          <div style="color: #2D3E8F; text-align: center; margin-top: 100px;">준비 중...</div>
+        </div>
+      </div>
+
+      <RightPanel 
+        :content="textAreaContent"
+        :title="rightPanelTitle"
+        :placeholder="textAreaPlaceholder"
+        :show-save-cycle="currentPage === 1"
+        :show-save-code="currentPage === 2"
+        :readonly="currentPage === 1"
+        @update:content="updateContent"
+        @save-cycle="handleSaveCycle"
+        @save-code="handleSaveCode"
+        @clear="clearContent"
+      />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -113,7 +113,14 @@ import CodeAssignment from './components/CodeAssignment.vue'
 import CycleManagement from './components/CycleManagement.vue'
 import PrintingCodeGenerator from './components/PrintingCodeGenerator.vue'
 import RightPanel from './components/RightPanel.vue'
-import gcodes from './constants/gcodes.js'
+
+// Composables
+import { useAppState } from './composables/useAppState'
+import { useSidebar } from './composables/useSidebar'
+import { useTextArea } from './composables/useTextArea'
+import { useCycleManagement } from './composables/useCycleManagement'
+import { useButtonManagement } from './composables/useButtonManagement'
+import { useCodeGeneration } from './composables/useCodeGeneration'
 
 export default {
   name: 'App',
@@ -124,410 +131,222 @@ export default {
     PrintingCodeGenerator,
     RightPanel
   },
-  data() {
-    return {
-      currentPage: 1,
-      selectedItems: [],
-      savedCycles: [],
-      buttonCodes: {
-        C1: gcodes.C1,
-        C2: gcodes.C2,
-        C3: gcodes.C3,
-        C4: gcodes.C4,
-        F1: gcodes.F1,
-        F2: gcodes.F2,
-        F3: gcodes.F3,
-        F4: gcodes.F4,
-      },
-      selectedButton: null,
-      customButtonLists: {},
-      allButtons: ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4'],
-      sidebarOpen: false,
-      
-      menuItems: [
-        { text: '사이클 생성', icon: 'dashboard-icon' },
-        { text: '코드 할당', icon: 'clients-icon' },
-        { text: '사이클 관리', icon: 'messages-icon' },
-        { text: '코드 파일 생성', icon: 'schedule-icon' }
-      ],
-      
-      // Text area data
-      textAreaContent: '',
-      rightPanelTitle: 'NC Code',
-      textAreaPlaceholder: '여기에 NC 코드를 작성하세요...'
-    }
-  },
-  mounted() {
-    this.loadData()
-  },
-  methods: {
-    switchPage(pageNumber) {
-      this.currentPage = pageNumber
-      this.updateTextAreaForPage(pageNumber)
-    },
+  setup() {
+    // Composables 초기화
+    const {
+      currentPage,
+      selectedItems,
+      savedCycles,
+      buttonCodes,
+      selectedButton,
+      customButtonLists,
+      allButtons,
+      menuItems
+    } = useAppState()
     
-    addToBottomPanel(itemName) {
+    const { sidebarOpen, toggleSidebar } = useSidebar()
+    
+    const {
+      textAreaContent,
+      rightPanelTitle,
+      textAreaPlaceholder,
+      updateContent,
+      updateTitle,
+      clearContent,
+      updateTextAreaForPage,
+      showButtonCode
+    } = useTextArea()
+    
+    const {
+      saveCycle: saveCycleToStorage,
+      deleteCycle,
+      showCycleContent,
+      loadCycles,
+      saveCyclesToStorage
+    } = useCycleManagement()
+    
+    const {
+      addButton,
+      deleteButtons,
+      selectButton,
+      saveCode,
+      loadButtonData,
+      saveButtonData
+    } = useButtonManagement()
+    
+    const { generate3DPrintingCode } = useCodeGeneration()
+    
+    // 데이터 로드
+    const loadData = () => {
+      loadCycles()
+      loadButtonData()
+    }
+    
+    // 데이터 저장
+    const saveData = () => {
+      saveCyclesToStorage()
+      saveButtonData()
+    }
+    
+    // 페이지 전환
+    const switchPage = (pageNumber) => {
+      currentPage.value = pageNumber
+      updateTextAreaForPage(pageNumber)
+    }
+    
+    // 하단 패널에 아이템 추가
+    const addToBottomPanel = (itemName) => {
       const timestamp = Date.now()
       const uniqueId = `${itemName}_${timestamp}`
-      
-      this.selectedItems.push({ id: uniqueId, name: itemName })
-      // updateNCCode() 호출 제거 - showButtonCode()에서 처리
-    },
+      selectedItems.value.push({ id: uniqueId, name: itemName })
+    }
     
-    removeFromBottomPanel(itemId) {
-      const index = this.selectedItems.findIndex(item => item.id === itemId)
+    // 하단 패널에서 아이템 제거
+    const removeFromBottomPanel = (itemId) => {
+      const index = selectedItems.value.findIndex(item => item.id === itemId)
       if (index > -1) {
-        this.selectedItems.splice(index, 1)
-        this.updateNCCode()
+        selectedItems.value.splice(index, 1)
+        updateNCCode()
       }
-    },
+    }
     
-    updateNCCode() {
+    // NC 코드 업데이트
+    const updateNCCode = () => {
       let ncCode = ''
-      this.selectedItems.forEach(item => {
-        if (this.buttonCodes[item.name]) {
+      selectedItems.value.forEach(item => {
+        if (buttonCodes[item.name]) {
           if (ncCode !== '') {
             ncCode += '\n'
           }
-          ncCode += this.buttonCodes[item.name]
+          ncCode += buttonCodes[item.name]
         }
       })
-      this.textAreaContent = ncCode
-    },
+      updateContent(ncCode)
+    }
     
-    showButtonCode(buttonName) {
-      // 버튼 클릭 시 해당 버튼의 코드를 기존 코드에 누적하여 표시
-      if (this.buttonCodes[buttonName]) {
-        // 기존 코드가 있으면 줄바꿈을 추가하고 새 코드를 누적
-        if (this.textAreaContent && this.textAreaContent.trim() !== '') {
-          this.textAreaContent += '\n\n' + this.buttonCodes[buttonName]
-        } else {
-          this.textAreaContent = this.buttonCodes[buttonName]
-        }
-      } else {
-        // 코드가 없는 경우 기존 코드에 안내 메시지 추가
-        if (this.textAreaContent && this.textAreaContent.trim() !== '') {
-          this.textAreaContent += '\n\n' + `// ${buttonName} 버튼에 할당된 코드가 없습니다.`
-        } else {
-          this.textAreaContent = `// ${buttonName} 버튼에 할당된 코드가 없습니다.`
-        }
-      }
-    },
+    // 모든 아이템 삭제
+    const clearAllItems = () => {
+      selectedItems.value = []
+      clearContent()
+    }
     
-    updateTextAreaForPage(pageNumber) {
-      if (pageNumber === 1) {
-        this.textAreaPlaceholder = '여기에 NC 코드를 작성하세요...'
-        this.textAreaContent = ''
-      } else if (pageNumber === 2) {
-        this.textAreaPlaceholder = '선택한 버튼에 할당할 NC 코드를 입력하세요...'
-        this.textAreaContent = ''
-      } else if (pageNumber === 3) {
-        this.textAreaPlaceholder = '사이클을 선택하면 코드가 표시됩니다...'
-        this.textAreaContent = ''
-      } else {
-        this.textAreaPlaceholder = 'NC Code'
-        this.textAreaContent = ''
+    // 버튼 추가 처리
+    const handleAddButton = ({ selectedList, buttonName }) => {
+      try {
+        addButton(selectedList, buttonName)
+        saveData()
+      } catch (error) {
+        alert(error.message)
       }
-    },
+    }
     
-    selectButton(button) {
-      this.selectedButton = button
-      this.textAreaContent = this.buttonCodes[button] || ''
-    },
+    // 버튼 삭제 처리
+    const handleDeleteButtons = ({ listType, buttons }) => {
+      try {
+        deleteButtons(listType, buttons)
+        saveData()
+        alert('선택된 버튼들이 삭제되었습니다.')
+      } catch (error) {
+        alert(error.message)
+      }
+    }
     
-
+    // 버튼 선택 처리
+    const handleSelectButton = (button) => {
+      selectButton(button, updateContent)
+    }
     
-    addButton({ selectedList, buttonName }) {
-      if (selectedList === 'C' || selectedList === 'F') {
-        if (!this.customButtonLists[selectedList]) {
-          this.customButtonLists[selectedList] = []
-        }
-        this.customButtonLists[selectedList].push(buttonName)
-      } else {
-        this.customButtonLists[selectedList].push(buttonName)
-      }
-      
-      this.allButtons.push(buttonName)
-      this.saveData()
-    },
+    // 버튼 코드 표시 처리
+    const handleShowButtonCode = (buttonName) => {
+      showButtonCode(buttonName, buttonCodes)
+    }
     
-    saveCycle() {
-      const text = this.textAreaContent.trim()
-      
-      if (!text) {
-        alert('저장할 NC 코드가 없습니다.')
-        return
-      }
-      
-      const cycleName = prompt('사이클 이름을 입력하세요:', `Cycle_${this.savedCycles.length + 1}`)
-      if (!cycleName || cycleName.trim() === '') {
-        alert('사이클 이름을 입력해주세요.')
-        return
-      }
-      
-      const cycle = {
-        id: Date.now(),
-        name: cycleName.trim(),
-        content: text,
-        date: new Date().toLocaleString(),
-        selectedItems: [...this.selectedItems]
-      }
-      
-      this.savedCycles.push(cycle)
-      this.saveData()
-      alert('사이클이 저장되었습니다.')
-    },
-    
-    saveCode() {
-      const text = this.textAreaContent.trim()
-      
-      if (!text) {
-        alert('저장할 코드가 없습니다.')
-        return
-      }
-      
-      if (!this.selectedButton) {
-        alert('먼저 버튼을 선택해주세요.')
-        return
-      }
-      
-      this.buttonCodes[this.selectedButton] = text
-      this.saveData()
-      alert('코드가 저장되었습니다.')
-    },
-    
-    clearTextArea() {
-      this.textAreaContent = ''
-    },
-    
-    showCycleContent(cycle) {
-      this.textAreaContent = cycle.content
-      this.rightPanelTitle = `사이클: ${cycle.name}`
-      
-      setTimeout(() => {
-        this.rightPanelTitle = 'NC Code'
-      }, 3000)
-    },
-    
-    deleteCycle(index) {
-      this.savedCycles.splice(index, 1)
-      this.saveData()
-    },
-    
-    deleteButtons({ listType, buttons }) {
-      // 기본 버튼들 (C1-C4, F1-F4)은 삭제 불가
-      const defaultButtons = ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4']
-      const deletableButtons = buttons.filter(button => !defaultButtons.includes(button))
-      
-      if (deletableButtons.length === 0) {
-        alert('기본 버튼(C1-C4, F1-F4)은 삭제할 수 없습니다.')
-        return
-      }
-      
-      // customButtonLists에서 버튼 제거
-      if (this.customButtonLists[listType]) {
-        this.customButtonLists[listType] = this.customButtonLists[listType].filter(
-          button => !deletableButtons.includes(button)
-        )
-      }
-      
-      // allButtons에서도 제거
-      deletableButtons.forEach(button => {
-        const index = this.allButtons.indexOf(button)
-        if (index > -1) {
-          this.allButtons.splice(index, 1)
-        }
-      })
-      
-      // buttonCodes에서도 제거
-      deletableButtons.forEach(button => {
-        delete this.buttonCodes[button]
-      })
-      
-      // 선택된 버튼이 삭제된 버튼 중 하나라면 선택 해제
-      if (deletableButtons.includes(this.selectedButton)) {
-        this.selectedButton = null
-        this.textAreaContent = ''
-      }
-      
-      this.saveData()
-    },
-    
-    generate3DPrintingCode({ layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed, includeComments }) {
-      console.log('피더 선택:', selectedFeeder)
-      const generatedCode = this.generateCodeContent(layerThickness, dwellTime, target, selectedFeeder, selectedCycle, scanSpeed, includeComments)
-      this.textAreaContent = generatedCode
-      alert(`3D 프린팅 코드가 생성되었습니다. (선택된 피더: ${selectedFeeder})`)
-    },
-    
-    generateCodeContent(layerThickness, dwellTime, target, feeder, cycle, scanSpeed, includeComments = true) {
-      console.log('generateCodeContent 호출됨:', { layerThickness, dwellTime, target, feeder, cycle, scanSpeed, includeComments })
-      
-      // 총 레이어 수 계산
-      const totalLayers = Math.ceil(target / layerThickness)
-      
-      // 선택된 사이클의 버튼 코드들 가져오기
-      let cycleButtonCodes = []
-      if (cycle.selectedItems && cycle.selectedItems.length > 0) {
-        cycleButtonCodes = cycle.selectedItems.map(item => {
-          return this.buttonCodes[item.name] || `; ${item.name} - No code assigned`
-        })
-      } else {
-        // 기본 C1 사이클 템플릿 사용
-        cycleButtonCodes = [this.buttonCodes['C1'] || `; C1 - No code assigned`]
-      }
-      
-      // 피더별 코드 가져오기
-      const feederCodes = {
-        1: { on: 'M60', off: 'M70' },
-        2: { on: 'M61', off: 'M71' },
-        3: { on: 'M62', off: 'M72' }
-      }
-      
-      // 피더 값을 숫자로 변환
-      const feederNumber = parseInt(feeder) || 1
-      const selectedFeeder = feederCodes[feederNumber] || feederCodes[1]
-      console.log('피더 매개변수:', feeder)
-      console.log('피더 타입:', typeof feeder)
-      console.log('선택된 피더 코드:', selectedFeeder)
-      
-      let generatedCode = ''
-      
-      // 1. 프로그램 헤더 생성
-      if (includeComments) {
-        generatedCode += '; === 프로그램 헤더 ===\n'
-      }
-      generatedCode += 'G90\n'
-      generatedCode += 'M50\n'
-      generatedCode += `F${scanSpeed}\n`
-      generatedCode += 'G54\n'
-      generatedCode += 'M40\n'
-      generatedCode += `${selectedFeeder.on}\n`
-      generatedCode += `G4 P${dwellTime}\n`
-      if (includeComments) {
-        generatedCode += '\n'
-      }
-      
-      // 2. 레이어 루프 시작
-      for (let layer = 1; layer <= totalLayers; layer++) {
-        const currentZ = ((layer - 1) * layerThickness).toFixed(3)
-        
-        if (includeComments) {
-          generatedCode += `; === Layer ${layer} (Z = ${currentZ}) ===\n`
+    // 사이클 저장 처리
+    const handleSaveCycle = () => {
+      try {
+        const cycleName = prompt('사이클 이름을 입력하세요:', `Cycle_${savedCycles.value.length + 1}`)
+        if (!cycleName || cycleName.trim() === '') {
+          alert('사이클 이름을 입력해주세요.')
+          return
         }
         
-        // 2-1. 레이어 변경 블록 (첫 번째 레이어 제외)
-        if (layer > 1) {
-          if (includeComments) {
-            generatedCode += '; 레이어 변경 블록\n'
-          }
-          generatedCode += 'M51\n'
-          generatedCode += `${selectedFeeder.off}\n`
-          generatedCode += 'M41\n'
-          generatedCode += `G4 P${dwellTime}\n`
-          generatedCode += 'M50\n'
-          generatedCode += 'M40\n'
-          generatedCode += `${selectedFeeder.on}\n`
-          generatedCode += `G4 P${dwellTime}\n`
-          if (includeComments) {
-            generatedCode += '\n'
-          }
-        }
-        
-        // 2-2. 선택된 사이클의 버튼 코드들을 현재 Z 높이에 맞춰 생성
-        cycleButtonCodes.forEach((buttonCode, index) => {
-          if (includeComments) {
-            generatedCode += `; ${cycle.selectedItems[index]?.name || `Button ${index + 1}`}\n`
-          }
-          
-          // 버튼 코드를 현재 Z 높이에 맞춰 수정
-          let modifiedCode = buttonCode
-            // Z 값 교체
-            .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
-            // G4 P 값 교체
-            .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
-          
-          generatedCode += modifiedCode
-          if (includeComments) {
-            generatedCode += '\n\n'
-          } else {
-            generatedCode += '\n'
-          }
-        })
+        saveCycleToStorage(cycleName, textAreaContent.value, selectedItems.value)
+        saveData()
+        alert('사이클이 저장되었습니다.')
+      } catch (error) {
+        alert(error.message)
       }
+    }
+    
+    // 코드 저장 처리
+    const handleSaveCode = () => {
+      try {
+        saveCode(selectedButton.value, textAreaContent.value)
+        saveData()
+        alert('코드가 저장되었습니다.')
+      } catch (error) {
+        alert(error.message)
+      }
+    }
+    
+    // 사이클 표시 처리
+    const handleShowCycle = (cycle) => {
+      showCycleContent(cycle, updateContent, updateTitle)
+    }
+    
+    // 사이클 삭제 처리
+    const handleDeleteCycle = (index) => {
+      deleteCycle(index)
+      saveData()
+    }
+    
+    // 3D 프린팅 코드 생성 처리
+    const handleGenerateCode = (params) => {
+      try {
+        generate3DPrintingCode(params, buttonCodes, updateContent)
+        alert(`3D 프린팅 코드가 생성되었습니다. (선택된 피더: ${params.selectedFeeder})`)
+      } catch (error) {
+        alert(error.message)
+      }
+    }
+    
+    // 컴포넌트 마운트 시 데이터 로드
+    loadData()
+    
+    return {
+      // 상태
+      currentPage,
+      selectedItems,
+      savedCycles,
+      buttonCodes,
+      selectedButton,
+      customButtonLists,
+      allButtons,
+      sidebarOpen,
+      menuItems,
       
-      // 3. 프로그램 푸터 생성
-      if (includeComments) {
-        generatedCode += '; === 프로그램 푸터 ===\n'
-      }
-      generatedCode += 'M51\n'
-      generatedCode += `${selectedFeeder.off}\n`
-      generatedCode += 'M41\n'
-      generatedCode += 'M30\n'
+      // 텍스트 영역
+      textAreaContent,
+      rightPanelTitle,
+      textAreaPlaceholder,
       
-      return generatedCode.trim()
-    },
-    
-
-    
-    loadData() {
-      const savedCycles = localStorage.getItem('savedCycles')
-      if (savedCycles) {
-        this.savedCycles = JSON.parse(savedCycles)
-      }
-      
-      const buttonCodes = localStorage.getItem('buttonCodes')
-      if (buttonCodes) {
-        const savedButtonCodes = JSON.parse(buttonCodes)
-        // 기본 버튼 코드들은 항상 gcodes에서 가져오고, 사용자 추가 코드만 localStorage에서 복원
-        this.buttonCodes = {
-          C1: gcodes.C1,
-          C2: gcodes.C2,
-          C3: gcodes.C3,
-          C4: gcodes.C4,
-          F1: gcodes.F1,
-          F2: gcodes.F2,
-          F3: gcodes.F3,
-          F4: gcodes.F4,
-          ...savedButtonCodes // 사용자 추가 코드들
-        }
-      }
-      
-      const customButtonLists = localStorage.getItem('customButtonLists')
-      if (customButtonLists) {
-        this.customButtonLists = JSON.parse(customButtonLists)
-        // 테스트1 관련 데이터 제거
-        if (this.customButtonLists['테스트1']) {
-          delete this.customButtonLists['테스트1']
-        }
-        // 사용자가 추가한 C2 제거
-        if (this.customButtonLists['C'] && this.customButtonLists['C'].includes('C2')) {
-          this.customButtonLists['C'] = this.customButtonLists['C'].filter(button => button !== 'C2')
-        }
-        this.updateAllButtonsArray()
-        this.saveData() // 변경사항 저장
-      }
-    },
-    
-    saveData() {
-      localStorage.setItem('savedCycles', JSON.stringify(this.savedCycles))
-      localStorage.setItem('buttonCodes', JSON.stringify(this.buttonCodes))
-      localStorage.setItem('customButtonLists', JSON.stringify(this.customButtonLists))
-    },
-    
-    updateAllButtonsArray() {
-      this.allButtons = ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4']
-      Object.values(this.customButtonLists).forEach(buttons => {
-        this.allButtons = this.allButtons.concat(buttons)
-      })
-    },
-    
-    toggleSidebar() {
-      this.sidebarOpen = !this.sidebarOpen
-    },
-    clearAllItems() {
-      this.selectedItems = []
-      this.textAreaContent = ''
+      // 메서드
+      toggleSidebar,
+      switchPage,
+      addToBottomPanel,
+      removeFromBottomPanel,
+      clearAllItems,
+      updateContent,
+      clearContent,
+      handleAddButton,
+      handleDeleteButtons,
+      handleSelectButton,
+      handleShowButtonCode,
+      handleSaveCycle,
+      handleSaveCode,
+      handleShowCycle,
+      handleDeleteCycle,
+      handleGenerateCode
     }
   }
 }
@@ -726,10 +545,25 @@ body {
   letter-spacing: 0.02em;
 }
 
-.logo-suffix {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  vertical-align: super;
+.sidebar-close {
+  background: none;
+  border: none;
+  color: #6C757D;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-close:hover {
+  background: #F8F9FA;
+  color: #495057;
 }
 
 .sidebar-menu {
@@ -794,36 +628,6 @@ body {
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>');
 }
 
-.page5-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
-}
-
-.logout-icon {
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>');
-}
-
-.sidebar-close {
-  background: none;
-  border: none;
-  color: #6C757D;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 6px;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.sidebar-close:hover {
-  background: #F8F9FA;
-  color: #495057;
-}
-
-
 .sidebar-text {
   font-family: 'Inter', sans-serif;
 }
@@ -856,13 +660,7 @@ body {
   position: relative;
   transform: translateX(0);
   transition: transform 0.3s ease;
-}content-wrapper {
-  flex: 1;
-  position: relative;
-  transform: translateX(0);
-  transition: transform 0.3s ease;
 }
-
 
 .main-frame.sidebar-open .content-wrapper {
   transform: translateX(250px);
