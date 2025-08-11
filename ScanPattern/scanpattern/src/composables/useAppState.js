@@ -25,10 +25,7 @@ export function useAppState() {
   const customButtonLists = reactive({})
   const allButtons = ref(['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4'])
   
-  // 텍스트 영역 상태
-  const textAreaContent = ref('')
-  const rightPanelTitle = ref('NC Code')
-  const textAreaPlaceholder = ref('여기에 NC 코드를 작성하세요...')
+
   
   // 메뉴 아이템
   const menuItems = [
@@ -37,6 +34,43 @@ export function useAppState() {
     { text: '사이클 관리', icon: 'messages-icon' },
     { text: '코드 파일 생성', icon: 'schedule-icon' }
   ]
+  
+  // localStorage에서 데이터 로드
+  const loadAppState = (onLoadComplete) => {
+    try {
+      console.log('loadAppState 실행됨')
+      const savedSelectedItems = localStorage.getItem('selectedItems')
+      console.log('localStorage에서 가져온 selectedItems:', savedSelectedItems)
+      if (savedSelectedItems) {
+        selectedItems.value = JSON.parse(savedSelectedItems)
+        console.log('selectedItems 복원됨:', selectedItems.value)
+      } else {
+        console.log('저장된 selectedItems 없음')
+      }
+      
+      // 로드 완료 후 콜백 실행
+      if (onLoadComplete && typeof onLoadComplete === 'function') {
+        console.log('콜백 함수 실행')
+        onLoadComplete()
+      } else {
+        console.log('콜백 함수 없음')
+      }
+    } catch (error) {
+      console.error('앱 상태 로드 중 오류:', error)
+    }
+  }
+  
+  // localStorage에 데이터 저장
+  const saveAppState = () => {
+    try {
+      localStorage.setItem('selectedItems', JSON.stringify(selectedItems.value))
+    } catch (error) {
+      console.error('앱 상태 저장 중 오류:', error)
+    }
+  }
+  
+  // 초기 데이터 로드 (콜백 없이)
+  loadAppState()
   
   return {
     // 상태
@@ -48,9 +82,10 @@ export function useAppState() {
     selectedButton,
     customButtonLists,
     allButtons,
-    textAreaContent,
-    rightPanelTitle,
-    textAreaPlaceholder,
-    menuItems
+    menuItems,
+    
+    // 함수
+    loadAppState,
+    saveAppState
   }
 }

@@ -5,8 +5,31 @@ export function useTextArea() {
   const rightPanelTitle = ref('NC Code')
   const textAreaPlaceholder = ref('여기에 NC 코드를 작성하세요...')
   
+  // localStorage에서 textAreaContent 복원
+  const loadTextAreaContent = () => {
+    try {
+      const savedContent = localStorage.getItem('textAreaContent')
+      if (savedContent) {
+        textAreaContent.value = savedContent
+      }
+    } catch (error) {
+      console.error('텍스트 영역 내용 로드 중 오류:', error)
+    }
+  }
+  
+  // 초기 로드
+  loadTextAreaContent()
+  
   const updateContent = (content) => {
+    console.log('useTextArea updateContent 실행됨, content:', content)
     textAreaContent.value = content
+    // localStorage에 자동 저장
+    try {
+      localStorage.setItem('textAreaContent', content)
+      console.log('localStorage에 textAreaContent 저장됨')
+    } catch (error) {
+      console.error('텍스트 영역 내용 저장 중 오류:', error)
+    }
   }
   
   const updateTitle = (title) => {
@@ -14,7 +37,15 @@ export function useTextArea() {
   }
   
   const clearContent = () => {
+    console.log('useTextArea clearContent 실행됨')
     textAreaContent.value = ''
+    // localStorage에서도 제거
+    try {
+      localStorage.removeItem('textAreaContent')
+      console.log('localStorage에서 textAreaContent 제거됨')
+    } catch (error) {
+      console.error('텍스트 영역 내용 제거 중 오류:', error)
+    }
   }
   
   const appendContent = (content) => {
@@ -29,7 +60,7 @@ export function useTextArea() {
     switch (pageNumber) {
       case 1:
         textAreaPlaceholder.value = '여기에 NC 코드를 작성하세요...'
-        textAreaContent.value = ''
+        // 메인 대시보드로 돌아올 때는 내용 유지 (사이클 생성 중이므로)
         break
       case 2:
         textAreaPlaceholder.value = '선택한 버튼에 할당할 NC 코드를 입력하세요...'
@@ -37,6 +68,10 @@ export function useTextArea() {
         break
       case 3:
         textAreaPlaceholder.value = '사이클을 선택하면 코드가 표시됩니다...'
+        textAreaContent.value = ''
+        break
+      case 4:
+        textAreaPlaceholder.value = '3D 프린팅 코드 생성...'
         textAreaContent.value = ''
         break
       default:

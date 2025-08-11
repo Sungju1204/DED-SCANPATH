@@ -140,7 +140,8 @@ export default {
       selectedButton,
       customButtonLists,
       allButtons,
-      menuItems
+      menuItems,
+      loadAppState
     } = useAppState()
     
     const { sidebarOpen, toggleSidebar } = useSidebar()
@@ -180,6 +181,16 @@ export default {
     const loadData = () => {
       loadCycles()
       loadButtonData()
+      // selectedItems 로드 후 NC 코드 업데이트
+      loadAppState(() => {
+        console.log('loadAppState 콜백 실행됨, selectedItems:', selectedItems.value)
+        if (selectedItems.value.length > 0) {
+          console.log('selectedItems가 있음, updateNCCode 실행')
+          updateNCCode()
+        } else {
+          console.log('selectedItems가 없음')
+        }
+      })
     }
     
     // 데이터 저장
@@ -190,17 +201,40 @@ export default {
     
     // 페이지 전환
     const switchPage = (pageNumber) => {
+      console.log('switchPage 실행됨, pageNumber:', pageNumber)
+      // 이전 페이지 저장
+      const previousPage = currentPage.value
+      console.log('이전 페이지:', previousPage)
       currentPage.value = pageNumber
-      updateTextAreaForPage(pageNumber)
+      
+      // 메인 대시보드로 돌아올 때는 선택된 아이템과 코드 유지
+      if (pageNumber === 1 && previousPage !== 1) {
+        console.log('메인 대시보드로 돌아옴, 상태 유지')
+        // selectedItems와 textAreaContent는 유지
+        updateTextAreaForPage(pageNumber)
+        // selectedItems가 있으면 NC 코드 복원
+        if (selectedItems.value.length > 0) {
+          console.log('selectedItems 복원됨, NC 코드 업데이트')
+          updateNCCode()
+        }
+      } else {
+        console.log('다른 페이지로 이동')
+        updateTextAreaForPage(pageNumber)
+      }
     }
     
     // 하단 패널에 아이템 추가
     const addToBottomPanel = (itemName) => {
+      console.log('addToBottomPanel 실행됨, itemName:', itemName)
       const timestamp = Date.now()
       const uniqueId = `${itemName}_${timestamp}`
       selectedItems.value.push({ id: uniqueId, name: itemName })
+      console.log('selectedItems 업데이트됨:', selectedItems.value)
       // NC 코드 업데이트
       updateNCCode()
+      // selectedItems 자동 저장
+      localStorage.setItem('selectedItems', JSON.stringify(selectedItems.value))
+      console.log('localStorage에 selectedItems 저장됨')
     }
     
     // 하단 패널에서 아이템 제거
@@ -209,22 +243,33 @@ export default {
       if (index > -1) {
         selectedItems.value.splice(index, 1)
         updateNCCode()
+        // selectedItems 자동 저장
+        localStorage.setItem('selectedItems', JSON.stringify(selectedItems.value))
       }
     }
     
     // NC 코드 업데이트
     const updateNCCode = () => {
+      console.log('updateNCCode 실행됨, selectedItems:', selectedItems.value)
       let ncCode = ''
       selectedItems.value.forEach(item => {
+        console.log('처리 중인 아이템:', item)
         if (buttonCodes[item.name]) {
           if (ncCode !== '') {
             ncCode += '\n\n'
           }
           ncCode += `// ${item.name} 버튼 코드\n${buttonCodes[item.name]}`
+        } else {
+          console.log('버튼 코드를 찾을 수 없음:', item.name)
         }
       })
+      console.log('생성된 NC 코드:', ncCode)
       if (ncCode) {
+        console.log('updateContent 호출')
         updateContent(ncCode)
+      } else {
+        console.log('clearContent 호출')
+        clearContent()
       }
     }
     
@@ -232,6 +277,8 @@ export default {
     const clearAllItems = () => {
       selectedItems.value = []
       clearContent()
+      // selectedItems 자동 저장
+      localStorage.setItem('selectedItems', JSON.stringify(selectedItems.value))
     }
     
     // 버튼 추가 처리
@@ -368,7 +415,8 @@ export default {
       handleSaveCode,
       handleShowCycle,
       handleDeleteCycle,
-      handleGenerateCode
+      handleGenerateCode,
+      loadAppState
     }
   }
 }
