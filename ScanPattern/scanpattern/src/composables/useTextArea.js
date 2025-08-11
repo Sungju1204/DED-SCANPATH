@@ -47,9 +47,10 @@ export function useTextArea() {
   
   const showButtonCode = (buttonName, buttonCodes) => {
     if (buttonCodes[buttonName]) {
-      appendContent(buttonCodes[buttonName])
+      // 기존 내용을 지우고 새로운 코드로 교체
+      textAreaContent.value = buttonCodes[buttonName]
     } else {
-      appendContent(`// ${buttonName} 버튼에 할당된 코드가 없습니다.`)
+      textAreaContent.value = `// ${buttonName} 버튼에 할당된 코드가 없습니다.`
     }
   }
   

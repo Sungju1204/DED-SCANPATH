@@ -14,8 +14,7 @@ export function useCodeGeneration() {
       target,
       selectedFeeder,
       selectedCycle,
-      scanSpeed,
-      includeComments
+      scanSpeed
     } = params
     
     console.log('피더 선택:', selectedFeeder)
@@ -26,7 +25,6 @@ export function useCodeGeneration() {
       selectedFeeder,
       selectedCycle,
       scanSpeed,
-      includeComments,
       buttonCodes
     )
     
@@ -41,7 +39,6 @@ export function useCodeGeneration() {
     feeder,
     cycle,
     scanSpeed,
-    includeComments = true,
     buttonCodes
   ) => {
     console.log('generateCodeContent 호출됨:', { 
@@ -50,8 +47,7 @@ export function useCodeGeneration() {
       target, 
       feeder, 
       cycle, 
-      scanSpeed, 
-      includeComments 
+      scanSpeed
     })
     
     // 총 레이어 수 계산
@@ -79,17 +75,17 @@ export function useCodeGeneration() {
     let generatedCode = ''
     
     // 1. 프로그램 헤더 생성
-    generatedCode += generateProgramHeader(selectedFeeder, dwellTime, scanSpeed, includeComments)
+    generatedCode += generateProgramHeader(selectedFeeder, dwellTime, scanSpeed)
     
     // 2. 레이어 루프 시작
     for (let layer = 1; layer <= totalLayers; layer++) {
       const currentZ = ((layer - 1) * layerThickness).toFixed(3)
       
-      generatedCode += generateLayerHeader(layer, currentZ, includeComments)
+      generatedCode += generateLayerHeader(layer, currentZ)
       
       // 2-1. 레이어 변경 블록 (첫 번째 레이어 제외)
       if (layer > 1) {
-        generatedCode += generateLayerChangeBlock(selectedFeeder, dwellTime, includeComments)
+        generatedCode += generateLayerChangeBlock(selectedFeeder, dwellTime)
       }
       
       // 2-2. 선택된 사이클의 버튼 코드들을 현재 Z 높이에 맞춰 생성
@@ -97,23 +93,20 @@ export function useCodeGeneration() {
         cycleButtonCodes,
         cycle.selectedItems,
         currentZ,
-        dwellTime,
-        includeComments
+        dwellTime
       )
     }
     
     // 3. 프로그램 푸터 생성
-    generatedCode += generateProgramFooter(selectedFeeder, includeComments)
+    generatedCode += generateProgramFooter(selectedFeeder)
     
     return generatedCode.trim()
   }
   
-  const generateProgramHeader = (selectedFeeder, dwellTime, scanSpeed, includeComments) => {
+  const generateProgramHeader = (selectedFeeder, dwellTime, scanSpeed) => {
     let code = ''
     
-    if (includeComments) {
-      code += '; === 프로그램 헤더 ===\n'
-    }
+    code += '; === 프로그램 헤더 ===\n'
     code += 'G90\n'
     code += 'M50\n'
     code += `F${scanSpeed}\n`
@@ -121,30 +114,23 @@ export function useCodeGeneration() {
     code += 'M40\n'
     code += `${selectedFeeder.on}\n`
     code += `G4 P${dwellTime}\n`
-    
-    if (includeComments) {
-      code += '\n'
-    }
+    code += '\n'
     
     return code
   }
   
-  const generateLayerHeader = (layer, currentZ, includeComments) => {
+  const generateLayerHeader = (layer, currentZ) => {
     let code = ''
     
-    if (includeComments) {
-      code += `; === Layer ${layer} (Z = ${currentZ}) ===\n`
-    }
+    code += `; === Layer ${layer} (Z = ${currentZ}) ===\n`
     
     return code
   }
   
-  const generateLayerChangeBlock = (selectedFeeder, dwellTime, includeComments) => {
+  const generateLayerChangeBlock = (selectedFeeder, dwellTime) => {
     let code = ''
     
-    if (includeComments) {
-      code += '; 레이어 변경 블록\n'
-    }
+    code += '; 레이어 변경 블록\n'
     code += 'M51\n'
     code += `${selectedFeeder.off}\n`
     code += 'M41\n'
@@ -153,21 +139,16 @@ export function useCodeGeneration() {
     code += 'M40\n'
     code += `${selectedFeeder.on}\n`
     code += `G4 P${dwellTime}\n`
-    
-    if (includeComments) {
-      code += '\n'
-    }
+    code += '\n'
     
     return code
   }
   
-  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime, includeComments) => {
+  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime) => {
     let code = ''
     
     cycleButtonCodes.forEach((buttonCode, index) => {
-      if (includeComments) {
-        code += `; ${selectedItems[index]?.name || `Button ${index + 1}`}\n`
-      }
+      code += `; ${selectedItems[index]?.name || `Button ${index + 1}`}\n`
       
       // 버튼 코드를 현재 Z 높이에 맞춰 수정
       let modifiedCode = buttonCode
@@ -177,22 +158,16 @@ export function useCodeGeneration() {
         .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
       
       code += modifiedCode
-      if (includeComments) {
-        code += '\n\n'
-      } else {
-        code += '\n'
-      }
+      code += '\n\n'
     })
     
     return code
   }
   
-  const generateProgramFooter = (selectedFeeder, includeComments) => {
+  const generateProgramFooter = (selectedFeeder) => {
     let code = ''
     
-    if (includeComments) {
-      code += '; === 프로그램 푸터 ===\n'
-    }
+    code += '; === 프로그램 푸터 ===\n'
     code += 'M51\n'
     code += `${selectedFeeder.off}\n`
     code += 'M41\n'

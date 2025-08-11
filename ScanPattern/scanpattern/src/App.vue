@@ -136,7 +136,6 @@ export default {
     const {
       currentPage,
       selectedItems,
-      savedCycles,
       buttonCodes,
       selectedButton,
       customButtonLists,
@@ -158,7 +157,8 @@ export default {
     } = useTextArea()
     
     const {
-      saveCycle: saveCycleToStorage,
+      savedCycles,
+      saveCycle,
       deleteCycle,
       showCycleContent,
       loadCycles,
@@ -199,6 +199,8 @@ export default {
       const timestamp = Date.now()
       const uniqueId = `${itemName}_${timestamp}`
       selectedItems.value.push({ id: uniqueId, name: itemName })
+      // NC 코드 업데이트
+      updateNCCode()
     }
     
     // 하단 패널에서 아이템 제거
@@ -216,12 +218,14 @@ export default {
       selectedItems.value.forEach(item => {
         if (buttonCodes[item.name]) {
           if (ncCode !== '') {
-            ncCode += '\n'
+            ncCode += '\n\n'
           }
-          ncCode += buttonCodes[item.name]
+          ncCode += `// ${item.name} 버튼 코드\n${buttonCodes[item.name]}`
         }
       })
-      updateContent(ncCode)
+      if (ncCode) {
+        updateContent(ncCode)
+      }
     }
     
     // 모든 아이템 삭제
@@ -259,20 +263,38 @@ export default {
     // 버튼 코드 표시 처리
     const handleShowButtonCode = (buttonName) => {
       showButtonCode(buttonName, buttonCodes)
+      // NC 코드 업데이트
+      updateNCCode()
     }
     
     // 사이클 저장 처리
     const handleSaveCycle = () => {
       try {
+        // NC 코드가 없으면 저장 불가
+        if (!textAreaContent.value || textAreaContent.value.trim() === '') {
+          alert('저장할 NC 코드가 없습니다. 먼저 버튼을 클릭하여 코드를 생성해주세요.')
+          return
+        }
+        
         const cycleName = prompt('사이클 이름을 입력하세요:', `Cycle_${savedCycles.value.length + 1}`)
         if (!cycleName || cycleName.trim() === '') {
           alert('사이클 이름을 입력해주세요.')
           return
         }
         
-        saveCycleToStorage(cycleName, textAreaContent.value, selectedItems.value)
+        // 사이클 저장
+        const newCycle = saveCycle(cycleName, textAreaContent.value, selectedItems.value)
+        
+        // 데이터 저장
         saveData()
-        alert('사이클이 저장되었습니다.')
+        
+        // 사이클 관리 페이지로 이동
+        currentPage.value = 3
+        
+        // 사이클 저장 성공 메시지
+        setTimeout(() => {
+          alert(`사이클 "${cycleName}"이 저장되었습니다!\n\n저장된 사이클 정보:\n- 이름: ${cycleName}\n- 선택된 아이템: ${selectedItems.value.map(item => item.name).join(', ')}\n- 저장 시간: ${newCycle.date}`)
+        }, 100)
       } catch (error) {
         alert(error.message)
       }

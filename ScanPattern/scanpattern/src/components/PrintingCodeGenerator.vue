@@ -51,15 +51,7 @@
               placeholder="850"
             >
           </div>
-          <div class="setting-item">
-            <label for="includeComments">주석 포함</label>
-            <input 
-              v-model="printingSettings.includeComments"
-              type="checkbox"
-              id="includeComments"
-            >
-            <span class="checkbox-label">NC 코드에 주석 포함</span>
-          </div>
+
         </div>
         
         <div class="feeder-selection">
@@ -86,6 +78,9 @@
       
       <div class="cycle-selection-section">
         <div class="section-title">사이클 선택</div>
+        
+
+        
         <div class="cycle-dropdown">
           <select v-model="selectedCycleIndex">
             <option value="">사이클을 선택하세요</option>
@@ -137,15 +132,14 @@ export default {
         dwellTime: 3500,
         target: 5.0,
         scanSpeed: 850,
-        selectedFeeder: 1,
-        includeComments: true
+        selectedFeeder: 1
       },
       selectedCycleIndex: ''
     }
   },
   methods: {
     generateCode() {
-      const { layerThickness, dwellTime, target, selectedFeeder, includeComments } = this.printingSettings
+      const { layerThickness, dwellTime, target, selectedFeeder } = this.printingSettings
       
       if (!layerThickness || !dwellTime || !target) {
         alert('Layer Thickness, Dwell Time, Target을 모두 입력해주세요.')
@@ -171,8 +165,7 @@ export default {
         target,
         selectedFeeder: parseInt(selectedFeeder),
         selectedCycle,
-        scanSpeed: this.printingSettings.scanSpeed,
-        includeComments
+        scanSpeed: this.printingSettings.scanSpeed
       })
     }
   }

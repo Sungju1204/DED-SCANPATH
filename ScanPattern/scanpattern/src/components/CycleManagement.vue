@@ -4,6 +4,8 @@
       <div class="code-assignment-title">사이클 관리</div>
       
       <div class="cycle-list-container">
+
+        
         <div v-if="savedCycles.length === 0" class="empty-cycle-message">
           저장된 사이클이 없습니다.
         </div>
@@ -46,8 +48,15 @@ export default {
     }
   },
   emits: ['show-cycle', 'delete-cycle'],
+  mounted() {
+    console.log('CycleManagement 컴포넌트 마운트됨, savedCycles:', this.savedCycles)
+  },
+  updated() {
+    console.log('CycleManagement 컴포넌트 업데이트됨, savedCycles:', this.savedCycles)
+  },
   methods: {
     showCycleContent(cycle) {
+      console.log('사이클 클릭됨:', cycle)
       this.$emit('show-cycle', cycle)
     },
     

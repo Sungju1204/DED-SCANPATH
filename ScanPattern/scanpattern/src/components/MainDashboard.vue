@@ -230,7 +230,7 @@ export default {
   methods: {
     addToBottomPanel(itemName) {
       this.$emit('add-item', itemName)
-      // 버튼 클릭 시 해당 버튼의 코드만 text-area에 표시
+      // 버튼 클릭 시 해당 버튼의 코드를 text-area에 표시
       this.$emit('show-button-code', itemName)
     },
     removeFromBottomPanel(itemId) {

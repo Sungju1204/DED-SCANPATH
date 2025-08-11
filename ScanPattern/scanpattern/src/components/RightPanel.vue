@@ -2,8 +2,19 @@
   <div class="right-panel">
     <div class="right-panel-title">{{ title }}</div>
     <div class="text-area-container">
+      <!-- 주석 버튼 -->
+      <div class="comment-button-container">
+        <button 
+          class="comment-button" 
+          @click="toggleComments"
+          :class="{ 'active': showComments }"
+        >
+          {{ showComments ? '주석 숨기기' : '주석 보기' }}
+        </button>
+      </div>
+      
       <textarea 
-        :value="content"
+        :value="displayContent"
         class="text-area" 
         :placeholder="placeholder"
         :readonly="readonly"
@@ -64,6 +75,64 @@ export default {
       default: false
     }
   },
+  data() {
+    return {
+      showComments: false
+    }
+  },
+  computed: {
+    displayContent() {
+      if (!this.showComments) {
+        // 주석이 숨겨진 상태: 주석 라인과 빈 줄 제거
+        const lines = this.content.split('\n')
+        const filteredLines = lines.filter(line => {
+          const trimmedLine = line.trim()
+          
+          // 주석 라인 제거 (//, ;, # 등으로 시작하는 라인)
+          if (trimmedLine.startsWith('//') || 
+              trimmedLine.startsWith(';') || 
+              trimmedLine.startsWith('#') ||
+              trimmedLine.startsWith('/*') ||
+              trimmedLine.startsWith('*') ||
+              trimmedLine.startsWith('*/')) {
+            return false
+          }
+          
+          // 빈 줄 제거
+          if (trimmedLine === '') {
+            return false
+          }
+          
+          // 주석이 포함된 라인에서 주석 부분만 제거하고 코드 부분만 유지
+          if (trimmedLine.includes('//') || trimmedLine.includes(';')) {
+            const commentIndex = Math.min(
+              trimmedLine.indexOf('//') !== -1 ? trimmedLine.indexOf('//') : Infinity,
+              trimmedLine.indexOf(';') !== -1 ? trimmedLine.indexOf(';') : Infinity
+            )
+            if (commentIndex !== Infinity) {
+              const codePart = trimmedLine.substring(0, commentIndex).trim()
+              return codePart !== ''
+            }
+          }
+          
+          return true
+        })
+        
+        const result = filteredLines.join('\n')
+        console.log('주석 필터링 결과:', {
+          원본_줄수: lines.length,
+          필터링_줄수: filteredLines.length,
+          원본_내용: this.content,
+          필터링_내용: result
+        })
+        
+        return result
+      }
+      
+      console.log('주석 표시 모드:', this.content)
+      return this.content
+    }
+  },
   emits: ['update:content', 'save-cycle', 'save-code', 'clear'],
   methods: {
     onInput(event) {
@@ -82,6 +151,10 @@ export default {
       if (confirm('정말로 모든 텍스트를 지우시겠습니까?')) {
         this.$emit('clear')
       }
+    },
+    
+    toggleComments() {
+      this.showComments = !this.showComments
     }
   }
 }
@@ -116,6 +189,39 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.comment-button-container {
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.comment-button {
+  padding: 8px 16px;
+  background: #6C757D;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comment-button:hover {
+  background: #5A6268;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(108, 117, 125, 0.3);
+}
+
+.comment-button.active {
+  background: #007BFF;
+}
+
+.comment-button.active:hover {
+  background: #0056B3;
 }
 
 .text-area {
