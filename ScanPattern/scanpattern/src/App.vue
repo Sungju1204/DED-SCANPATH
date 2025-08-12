@@ -71,8 +71,12 @@
       <CycleManagement 
         v-show="currentPage === 3"
         :saved-cycles="savedCycles"
+        :is-loading="isLoading"
+        :error="error"
         @show-cycle="handleShowCycle"
         @delete-cycle="handleDeleteCycle"
+        @update-cycle="handleUpdateCycle"
+        @retry-load="handleRetryLoad"
       />
 
       <!-- Page 4: 3D Printing Code Generator -->
@@ -159,11 +163,15 @@ export default {
     
     const {
       savedCycles,
+      isLoading,
+      error,
       saveCycle,
       deleteCycle,
       showCycleContent,
       loadCycles,
-      saveCyclesToStorage
+      updateCycle,
+      saveCyclesToStorage,
+      loadCyclesFromStorage
     } = useCycleManagement()
     
     const {
@@ -178,19 +186,25 @@ export default {
     const { generate3DPrintingCode } = useCodeGeneration()
     
     // 데이터 로드
-    const loadData = () => {
-      loadCycles()
-      loadButtonData()
-      // selectedItems 로드 후 NC 코드 업데이트
-      loadAppState(() => {
-        console.log('loadAppState 콜백 실행됨, selectedItems:', selectedItems.value)
-        if (selectedItems.value.length > 0) {
-          console.log('selectedItems가 있음, updateNCCode 실행')
-          updateNCCode()
-        } else {
-          console.log('selectedItems가 없음')
-        }
-      })
+    const loadData = async () => {
+      try {
+        await loadCycles()
+        loadButtonData()
+        // selectedItems 로드 후 NC 코드 업데이트
+        loadAppState(() => {
+          console.log('loadAppState 콜백 실행됨, selectedItems:', selectedItems.value)
+          if (selectedItems.value.length > 0) {
+            console.log('selectedItems가 있음, updateNCCode 실행')
+            updateNCCode()
+          } else {
+            console.log('selectedItems가 없음')
+          }
+        })
+      } catch (error) {
+        console.error('데이터 로드 실패:', error)
+        // 오류 발생 시 로컬 백업에서 복원 시도
+        loadCyclesFromStorage()
+      }
     }
     
     // 데이터 저장
@@ -315,7 +329,7 @@ export default {
     }
     
     // 사이클 저장 처리
-    const handleSaveCycle = () => {
+    const handleSaveCycle = async () => {
       try {
         // NC 코드가 없으면 저장 불가
         if (!textAreaContent.value || textAreaContent.value.trim() === '') {
@@ -329,10 +343,10 @@ export default {
           return
         }
         
-        // 사이클 저장
-        const newCycle = saveCycle(cycleName, textAreaContent.value, selectedItems.value)
+        // 사이클 저장 (Supabase)
+        const newCycle = await saveCycle(cycleName, textAreaContent.value, selectedItems.value)
         
-        // 데이터 저장
+        // 로컬 백업 저장
         saveData()
         
         // 사이클 관리 페이지로 이동
@@ -340,10 +354,10 @@ export default {
         
         // 사이클 저장 성공 메시지
         setTimeout(() => {
-          alert(`사이클 "${cycleName}"이 저장되었습니다!\n\n저장된 사이클 정보:\n- 이름: ${cycleName}\n- 선택된 아이템: ${selectedItems.value.map(item => item.name).join(', ')}\n- 저장 시간: ${newCycle.date}`)
+          alert(`사이클 "${cycleName}"이 데이터베이스에 저장되었습니다!\n\n저장된 사이클 정보:\n- 이름: ${cycleName}\n- 선택된 아이템: ${selectedItems.value.map(item => item.name).join(', ')}\n- 저장 시간: ${newCycle.date}`)
         }, 100)
       } catch (error) {
-        alert(error.message)
+        alert(`사이클 저장 실패: ${error.message}`)
       }
     }
     
@@ -364,9 +378,42 @@ export default {
     }
     
     // 사이클 삭제 처리
-    const handleDeleteCycle = (index) => {
-      deleteCycle(index)
-      saveData()
+    const handleDeleteCycle = async (index) => {
+      try {
+        const cycle = savedCycles.value[index]
+        if (cycle && cycle.id) {
+          await deleteCycle(cycle.id)
+          // 로컬 백업 저장
+          saveData()
+        } else {
+          // ID가 없는 경우 (로컬 데이터) 기존 방식 사용
+          deleteCycle(index)
+          saveData()
+        }
+      } catch (error) {
+        alert(`사이클 삭제 실패: ${error.message}`)
+      }
+    }
+    
+    // 사이클 수정 처리
+    const handleUpdateCycle = async (id, cycleData) => {
+      try {
+        await updateCycle(id, cycleData)
+        // 로컬 백업 저장
+        saveData()
+      } catch (error) {
+        alert(`사이클 수정 실패: ${error.message}`)
+        throw error
+      }
+    }
+    
+    // 사이클 로드 재시도
+    const handleRetryLoad = async () => {
+      try {
+        await loadCycles()
+      } catch (error) {
+        console.error('사이클 로드 재시도 실패:', error)
+      }
     }
     
     // 3D 프린팅 코드 생성 처리
@@ -387,6 +434,8 @@ export default {
       currentPage,
       selectedItems,
       savedCycles,
+      isLoading,
+      error,
       buttonCodes,
       selectedButton,
       customButtonLists,
@@ -415,6 +464,8 @@ export default {
       handleSaveCode,
       handleShowCycle,
       handleDeleteCycle,
+      handleUpdateCycle,
+      handleRetryLoad,
       handleGenerateCode,
       loadAppState
     }

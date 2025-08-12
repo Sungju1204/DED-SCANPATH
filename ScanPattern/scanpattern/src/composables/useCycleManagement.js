@@ -1,9 +1,12 @@
 import { ref } from 'vue'
+import { CycleService } from '../services/cycleService'
 
 export function useCycleManagement() {
   const savedCycles = ref([])
+  const isLoading = ref(false)
+  const error = ref(null)
   
-  const saveCycle = (cycleName, content, selectedItems) => {
+  const saveCycle = async (cycleName, content, selectedItems) => {
     if (!content.trim()) {
       throw new Error('저장할 NC 코드가 없습니다.')
     }
@@ -12,22 +15,57 @@ export function useCycleManagement() {
       throw new Error('사이클 이름을 입력해주세요.')
     }
     
-    const cycle = {
-      id: Date.now(),
-      name: cycleName.trim(),
-      content: content,
-      date: new Date().toLocaleString(),
-      selectedItems: [...selectedItems]
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const cycleData = {
+        name: cycleName.trim(),
+        content: content,
+        selectedItems: [...selectedItems]
+      }
+      
+      console.log('사이클 저장 중:', cycleData)
+      
+      // Supabase에 저장
+      const savedCycle = await CycleService.saveCycle(cycleData)
+      
+      // 로컬 상태 업데이트
+      savedCycles.value.unshift(savedCycle)
+      
+      console.log('사이클 저장 완료:', savedCycle)
+      return savedCycle
+    } catch (err) {
+      error.value = err.message
+      console.error('사이클 저장 실패:', err)
+      throw err
+    } finally {
+      isLoading.value = false
     }
-    
-    console.log('사이클 저장 중:', cycle)
-    savedCycles.value.push(cycle)
-    console.log('저장된 사이클 목록:', savedCycles.value)
-    return cycle
   }
   
-  const deleteCycle = (index) => {
-    savedCycles.value.splice(index, 1)
+  const deleteCycle = async (id) => {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      // Supabase에서 삭제
+      await CycleService.deleteCycle(id)
+      
+      // 로컬 상태에서 제거
+      const index = savedCycles.value.findIndex(cycle => cycle.id === id)
+      if (index > -1) {
+        savedCycles.value.splice(index, 1)
+      }
+      
+      console.log('사이클 삭제 완료:', id)
+    } catch (err) {
+      error.value = err.message
+      console.error('사이클 삭제 실패:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
   }
   
   const showCycleContent = (cycle, updateTextArea, updateTitle) => {
@@ -40,29 +78,96 @@ export function useCycleManagement() {
     }, 3000)
   }
   
-  const loadCycles = () => {
-    const saved = localStorage.getItem('savedCycles')
-    console.log('localStorage에서 사이클 로드:', saved)
-    if (saved) {
-      savedCycles.value = JSON.parse(saved)
+  const loadCycles = async () => {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      console.log('Supabase에서 사이클 로드 중...')
+      const cycles = await CycleService.getAllCycles()
+      
+      // 데이터 형식 변환 (Supabase 응답을 기존 형식에 맞춤)
+      savedCycles.value = cycles.map(cycle => ({
+        id: cycle.id,
+        name: cycle.name,
+        content: cycle.content,
+        date: new Date(cycle.created_at).toLocaleString(),
+        selectedItems: cycle.selected_items || []
+      }))
+      
       console.log('로드된 사이클 목록:', savedCycles.value)
-    } else {
-      console.log('저장된 사이클이 없습니다.')
+    } catch (err) {
+      error.value = err.message
+      console.error('사이클 로드 실패:', err)
+      
+      // 오류 발생 시 빈 배열로 초기화
+      savedCycles.value = []
+    } finally {
+      isLoading.value = false
     }
   }
   
+  const updateCycle = async (id, cycleData) => {
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      // Supabase에서 수정
+      const updatedCycle = await CycleService.updateCycle(id, cycleData)
+      
+      // 로컬 상태 업데이트
+      const index = savedCycles.value.findIndex(cycle => cycle.id === id)
+      if (index > -1) {
+        savedCycles.value[index] = {
+          ...updatedCycle,
+          date: new Date(updatedCycle.updated_at || updatedCycle.created_at).toLocaleString(),
+          selectedItems: updatedCycle.selected_items || []
+        }
+      }
+      
+      console.log('사이클 수정 완료:', updatedCycle)
+      return updatedCycle
+    } catch (err) {
+      error.value = err.message
+      console.error('사이클 수정 실패:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+  
+  // 로컬 스토리지 백업 (선택사항)
   const saveCyclesToStorage = () => {
-    console.log('localStorage에 사이클 저장 중:', savedCycles.value)
+    console.log('localStorage에 사이클 백업 중:', savedCycles.value)
     localStorage.setItem('savedCycles', JSON.stringify(savedCycles.value))
-    console.log('localStorage 저장 완료')
+    console.log('localStorage 백업 완료')
+  }
+  
+  // 로컬 스토리지에서 복원 (선택사항)
+  const loadCyclesFromStorage = () => {
+    const saved = localStorage.getItem('savedCycles')
+    console.log('localStorage에서 사이클 백업 복원:', saved)
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        savedCycles.value = parsed
+        console.log('백업에서 복원된 사이클 목록:', savedCycles.value)
+      } catch (err) {
+        console.error('백업 복원 실패:', err)
+      }
+    }
   }
   
   return {
     savedCycles,
+    isLoading,
+    error,
     saveCycle,
     deleteCycle,
     showCycleContent,
     loadCycles,
-    saveCyclesToStorage
+    updateCycle,
+    saveCyclesToStorage,
+    loadCyclesFromStorage
   }
 }
