@@ -83,24 +83,20 @@ export function useCodeGeneration() {
       
       generatedCode += generateLayerHeader(layer, currentZ)
       
-      // 2-1. 레이어 변경 블록 (첫 번째 레이어 제외)
-      if (layer > 1) {
-        generatedCode += generateLayerChangeBlock(selectedFeeder, dwellTime)
-      }
-      
-      // 2-2. 선택된 사이클의 버튼 코드들을 현재 Z 높이에 맞춰 생성
+      // 2-1. 선택된 사이클의 버튼 코드들을 현재 Z 높이에 맞춰 생성
       generatedCode += generateCycleButtonCodes(
         cycleButtonCodes,
         cycle.selectedItems,
         currentZ,
         dwellTime,
         buttonCodes,
-        layerThickness
+        layerThickness,
+        selectedFeeder
       )
     }
     
     // 3. 프로그램 푸터 생성
-    generatedCode += generateProgramFooter(selectedFeeder)
+    generatedCode += generateProgramFooter(selectedFeeder, dwellTime)
     
     return generatedCode.trim()
   }
@@ -129,6 +125,23 @@ export function useCodeGeneration() {
     return code
   }
   
+  const generateProgramFooter = (selectedFeeder, dwellTime) => {
+    let code = ''
+    
+    code += '; === 프로그램 푸터 ===\n'
+    code += `${selectedFeeder.off}\n`
+    code += 'M41\n'
+    code += 'M51\n'
+    code += 'M53\n'
+    code += 'G0 X0.0 Y0.0\n'
+    code += `G4 P${dwellTime}\n`
+    code += 'M90\n'
+    code += 'G53\n'
+    code += 'M30\n'
+    
+    return code
+  }
+  
   const generateLayerChangeBlock = (selectedFeeder, dwellTime) => {
     let code = ''
     
@@ -140,13 +153,11 @@ export function useCodeGeneration() {
     code += 'M50\n'
     code += 'M40\n'
     code += `${selectedFeeder.on}\n`
-    code += `G4 P${dwellTime}\n`
-    code += '\n'
     
     return code
   }
   
-  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime, buttonCodes, layerThickness) => {
+  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime, buttonCodes, layerThickness, selectedFeeder) => {
     let code = ''
     
     // 슬래시로 구분된 그룹들을 찾기
@@ -185,31 +196,71 @@ export function useCodeGeneration() {
     
     console.log(`레이어 ${layerNumber} (Z=${currentZ}), 선택된 그룹 ${groupIndex}:`, selectedGroup)
     
-    selectedGroup.forEach((item) => {
-      const buttonCode = buttonCodes[item.name] || `; ${item.name} - No code assigned`
-      code += `; ${item.name}\n`
+    if (selectedGroup.length > 0) {
+      const firstItem = selectedGroup[0]
+      const firstButtonCode = buttonCodes[firstItem.name] || `; ${firstItem.name} - No code assigned`
       
-      // 버튼 코드를 현재 Z 높이에 맞춰 수정
-      let modifiedCode = buttonCode
-        // Z 값 교체
-        .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
-        // G4 P 값 교체
-        .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+      // 첫 번째 버튼 코드를 줄별로 분리
+      const codeLines = firstButtonCode.split('\n')
       
-      code += modifiedCode + '\n\n'
-    })
-    
-    return code
-  }
-  
-  const generateProgramFooter = (selectedFeeder) => {
-    let code = ''
-    
-    code += '; === 프로그램 푸터 ===\n'
-    code += 'M51\n'
-    code += `${selectedFeeder.off}\n`
-    code += 'M41\n'
-    code += 'M30\n'
+      // 첫 번째 G0 명령어만 찾아서 처리
+      let firstG0Found = false
+      let remainingCode = ''
+      
+      for (const line of codeLines) {
+        if (!firstG0Found && line.trim().startsWith('G0')) {
+          // 첫 번째 G0 명령어를 현재 Z 높이에 맞춰 수정
+          let modifiedG0 = line
+            .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
+            .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+          
+          code += `; ${firstItem.name}\n`
+          code += modifiedG0 + '\n'
+          firstG0Found = true
+          
+          // 첫 번째 G0 명령어 다음에 레이어 변경 블록 추가 (첫 번째 레이어 제외)
+          if (layerNumber > 1) {
+            code += generateLayerChangeBlock(selectedFeeder, dwellTime)
+            code += '; 나머지 동작 코드\n'
+          }
+          
+          // 나머지 코드는 그대로 추가
+          remainingCode = codeLines.slice(codeLines.indexOf(line) + 1).join('\n')
+          break
+        }
+      }
+      
+      // 첫 번째 G0를 찾지 못한 경우 전체 코드를 그대로 사용
+      if (!firstG0Found) {
+        code += `; ${firstItem.name}\n`
+        let modifiedCode = firstButtonCode
+          .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
+          .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+        code += modifiedCode + '\n'
+      } else if (remainingCode.trim()) {
+        // 나머지 코드가 있으면 Z 높이와 dwell time만 수정해서 추가
+        let modifiedRemainingCode = remainingCode
+          .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
+          .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+        code += modifiedRemainingCode + '\n'
+      }
+      
+      // 나머지 아이템들의 코드 생성
+      for (let i = 1; i < selectedGroup.length; i++) {
+        const item = selectedGroup[i]
+        const buttonCode = buttonCodes[item.name] || `; ${item.name} - No code assigned`
+        code += `; ${item.name}\n`
+        
+        // 버튼 코드를 현재 Z 높이에 맞춰 수정
+        let modifiedCode = buttonCode
+          // Z 값 교체
+          .replace(/Z[0-9]*\.?[0-9]+/g, `Z${currentZ}`)
+          // G4 P 값 교체
+          .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
+        
+        code += modifiedCode + '\n\n'
+      }
+    }
     
     return code
   }
