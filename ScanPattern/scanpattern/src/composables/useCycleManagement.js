@@ -30,11 +30,19 @@ export function useCycleManagement() {
       // Supabase에 저장
       const savedCycle = await CycleService.saveCycle(cycleData)
       
-      // 로컬 상태 업데이트
-      savedCycles.value.unshift(savedCycle)
+      // 로컬 상태 업데이트 (데이터 형식 통일)
+      const formattedCycle = {
+        id: savedCycle.id,
+        name: savedCycle.name,
+        content: savedCycle.content,
+        date: new Date(savedCycle.created_at || Date.now()).toLocaleString(),
+        selectedItems: savedCycle.selected_items || savedCycle.selectedItems || []
+      }
       
-      console.log('사이클 저장 완료:', savedCycle)
-      return savedCycle
+      savedCycles.value.unshift(formattedCycle)
+      
+      console.log('사이클 저장 완료:', formattedCycle)
+      return formattedCycle
     } catch (err) {
       error.value = err.message
       console.error('사이클 저장 실패:', err)
@@ -78,16 +86,16 @@ export function useCycleManagement() {
     }, 3000)
   }
   
-  const loadCycles = async () => {
+  const loadCycles = async (forceRefresh = false) => {
     try {
       isLoading.value = true
       error.value = null
       
-      console.log('Supabase에서 사이클 로드 중...')
+      console.log('Supabase에서 사이클 로드 중...', forceRefresh ? '(강제 새로고침)' : '')
       const cycles = await CycleService.getAllCycles()
       
       // 데이터 형식 변환 (Supabase 응답을 기존 형식에 맞춤)
-      savedCycles.value = cycles.map(cycle => ({
+      const formattedCycles = cycles.map(cycle => ({
         id: cycle.id,
         name: cycle.name,
         content: cycle.content,
@@ -95,13 +103,22 @@ export function useCycleManagement() {
         selectedItems: cycle.selected_items || []
       }))
       
-      console.log('로드된 사이클 목록:', savedCycles.value)
+      // 강제 새로고침이거나 데이터가 변경된 경우에만 상태 업데이트
+      if (forceRefresh || JSON.stringify(formattedCycles) !== JSON.stringify(savedCycles.value)) {
+        savedCycles.value = formattedCycles
+        console.log('사이클 목록 업데이트됨:', savedCycles.value)
+      } else {
+        console.log('사이클 목록 변경 없음, 상태 유지')
+      }
+      
+      return formattedCycles
     } catch (err) {
       error.value = err.message
       console.error('사이클 로드 실패:', err)
       
       // 오류 발생 시 빈 배열로 초기화
       savedCycles.value = []
+      throw err
     } finally {
       isLoading.value = false
     }

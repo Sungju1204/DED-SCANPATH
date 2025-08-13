@@ -93,7 +93,9 @@ export function useCodeGeneration() {
         cycleButtonCodes,
         cycle.selectedItems,
         currentZ,
-        dwellTime
+        dwellTime,
+        buttonCodes,
+        layerThickness
       )
     }
     
@@ -144,11 +146,48 @@ export function useCodeGeneration() {
     return code
   }
   
-  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime) => {
+  const generateCycleButtonCodes = (cycleButtonCodes, selectedItems, currentZ, dwellTime, buttonCodes, layerThickness) => {
     let code = ''
     
-    cycleButtonCodes.forEach((buttonCode, index) => {
-      code += `; ${selectedItems[index]?.name || `Button ${index + 1}`}\n`
+    // 슬래시로 구분된 그룹들을 찾기
+    const groups = []
+    let currentGroup = []
+    
+    selectedItems.forEach(item => {
+      if (item.name === '/') {
+        if (currentGroup.length > 0) {
+          groups.push(currentGroup)
+          currentGroup = []
+        }
+      } else {
+        currentGroup.push(item)
+      }
+    })
+    
+    // 마지막 그룹 추가
+    if (currentGroup.length > 0) {
+      groups.push(currentGroup)
+    }
+    
+    // 그룹이 없으면 전체를 하나의 그룹으로 처리
+    if (groups.length === 0) {
+      groups.push(selectedItems.filter(item => item.name !== '/'))
+    }
+    
+    // 현재 Z 높이에서 레이어 번호 계산 (layerThickness로 나누어서)
+    // 예: Z=0.1, layerThickness=0.1이면 layer=1, Z=0.2면 layer=2
+    const layerNumber = Math.floor(parseFloat(currentZ) / layerThickness) + 1
+    
+    // 레이어 번호로 그룹 선택 (1부터 시작하는 레이어 번호 사용)
+    // 레이어 1: 그룹 0, 레이어 2: 그룹 1, 레이어 3: 그룹 0, 레이어 4: 그룹 1...
+    const groupIndex = (layerNumber - 1) % groups.length
+    const selectedGroup = groups[groupIndex] || groups[0] || []
+    
+    console.log(`레이어 ${layerNumber} (Z=${currentZ}), 선택된 그룹 ${groupIndex}:`, selectedGroup)
+    
+    selectedGroup.forEach((item) => {
+      const buttonCode = buttonCodes[item.name] || `; ${item.name} - No code assigned`
+      code += `; ${item.name}\n`
       
       // 버튼 코드를 현재 Z 높이에 맞춰 수정
       let modifiedCode = buttonCode
@@ -157,8 +196,7 @@ export function useCodeGeneration() {
         // G4 P 값 교체
         .replace(/G4 P[0-9]+/g, `G4 P${dwellTime}`)
       
-      code += modifiedCode
-      code += '\n\n'
+      code += modifiedCode + '\n\n'
     })
     
     return code

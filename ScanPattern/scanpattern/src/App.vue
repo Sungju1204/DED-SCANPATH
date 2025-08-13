@@ -266,9 +266,19 @@ export default {
     const updateNCCode = () => {
       console.log('updateNCCode 실행됨, selectedItems:', selectedItems.value)
       let ncCode = ''
-      selectedItems.value.forEach(item => {
+      let currentLayer = 1
+      
+      selectedItems.value.forEach((item) => {
         console.log('처리 중인 아이템:', item)
-        if (buttonCodes[item.name]) {
+        
+        if (item.name === '/') {
+          // 슬래시 구분자일 때 레이어 구분 표시
+          if (ncCode !== '') {
+            ncCode += '\n\n'
+          }
+          ncCode += `// ===== 레이어 ${currentLayer} =====\n`
+          currentLayer++
+        } else if (buttonCodes[item.name]) {
           if (ncCode !== '') {
             ncCode += '\n\n'
           }
@@ -277,6 +287,7 @@ export default {
           console.log('버튼 코드를 찾을 수 없음:', item.name)
         }
       })
+      
       console.log('생성된 NC 코드:', ncCode)
       if (ncCode) {
         console.log('updateContent 호출')
@@ -346,6 +357,9 @@ export default {
         // 사이클 저장 (Supabase)
         const newCycle = await saveCycle(cycleName, textAreaContent.value, selectedItems.value)
         
+        // 사이클 목록을 강제 새로고침하여 최신 상태 반영
+        await loadCycles(true)
+        
         // 로컬 백업 저장
         saveData()
         
@@ -354,7 +368,7 @@ export default {
         
         // 사이클 저장 성공 메시지
         setTimeout(() => {
-          alert(`사이클 "${cycleName}"이 데이터베이스에 저장되었습니다!\n\n저장된 사이클 정보:\n- 이름: ${cycleName}\n- 선택된 아이템: ${selectedItems.value.map(item => item.name).join(', ')}\n- 저장 시간: ${newCycle.date}`)
+          alert(`사이클 "${cycleName}"이 데이터베이스에 저장되었습니다!\n\n저장된 사이클 정보:\n- ID: ${newCycle.id}\n- 이름: ${cycleName}\n- 선택된 아이템: ${selectedItems.value.map(item => item.name).join(', ')}\n- 저장 시간: ${new Date().toLocaleString()}`)
         }, 100)
       } catch (error) {
         alert(`사이클 저장 실패: ${error.message}`)
@@ -383,6 +397,8 @@ export default {
         const cycle = savedCycles.value[index]
         if (cycle && cycle.id) {
           await deleteCycle(cycle.id)
+          // 사이클 목록을 강제 새로고침하여 최신 상태 반영
+          await loadCycles(true)
           // 로컬 백업 저장
           saveData()
         } else {
@@ -399,6 +415,8 @@ export default {
     const handleUpdateCycle = async (id, cycleData) => {
       try {
         await updateCycle(id, cycleData)
+        // 사이클 목록을 강제 새로고침하여 최신 상태 반영
+        await loadCycles(true)
         // 로컬 백업 저장
         saveData()
       } catch (error) {
@@ -555,8 +573,8 @@ body {
 
 .slash-button {
   position: absolute;
-  left: 255px;
-  top: 543px;
+  left: 250px;
+  top: 590px;
   width: 36px;
   height: 36px;
   background: #007BFF;
@@ -575,7 +593,7 @@ body {
 }
 
 .main-frame.sidebar-open .slash-button {
-  left: 505px;
+  left: 500px;
 }
 
 .slash-button:hover {

@@ -164,9 +164,9 @@ export default {
 .right-panel {
   position: absolute;
   width: 399px;
-  height: 604px;
+  height: 595px;
   left: 850px;
-  top: 44px;
+  top: 100px;
   background: #FFFFFF;
   border: 1px solid #E9ECEF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);

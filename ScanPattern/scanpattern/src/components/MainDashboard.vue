@@ -316,9 +316,9 @@ export default {
 .content-grid {
   position: absolute;
   width: 653px;
-  height: 430px;
+  height: 450px;
   left: 135px;
-  top: 80px;
+  top: 100px;
   max-width: calc(100vw - 600px);
   background: #FFFFFF;
   border-radius: 12px;
@@ -511,7 +511,7 @@ export default {
   width: 653px;
   min-height: 125px;
   left: 135px;
-  top: 523px;
+  top: 570px;
   background: #FFFFFF;
   border: 1px solid #E9ECEF;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
