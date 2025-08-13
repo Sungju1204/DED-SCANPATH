@@ -106,6 +106,9 @@
         <button @click="generateCode" class="generate-button">
           코드 파일 생성
         </button>
+        <button @click="downloadAsText" class="download-button" :disabled="!generatedCode">
+          텍스트 파일로 저장
+        </button>
       </div>
     </div>
   </div>
@@ -122,6 +125,10 @@ export default {
     buttonCodes: {
       type: Object,
       default: () => ({})
+    },
+    generatedCode: {
+      type: String,
+      default: ''
     }
   },
   emits: ['generate-code'],
@@ -138,6 +145,47 @@ export default {
     }
   },
   methods: {
+    // 주석 제거 함수
+    removeComments(content) {
+      if (!content) return '';
+      
+      const lines = content.split('\n');
+      const filteredLines = lines.filter(line => {
+        const trimmedLine = line.trim();
+        
+        // 주석 라인 제거 (//, ;, # 등으로 시작하는 라인)
+        if (trimmedLine.startsWith('//') || 
+            trimmedLine.startsWith(';') || 
+            trimmedLine.startsWith('#') ||
+            trimmedLine.startsWith('/*') ||
+            trimmedLine.startsWith('*') ||
+            trimmedLine.startsWith('*/')) {
+          return false;
+        }
+        
+        // 빈 줄 제거
+        if (trimmedLine === '') {
+          return false;
+        }
+        
+        // 주석이 포함된 라인에서 주석 부분만 제거하고 코드 부분만 유지
+        if (trimmedLine.includes('//') || trimmedLine.includes(';')) {
+          const commentIndex = Math.min(
+            trimmedLine.indexOf('//') !== -1 ? trimmedLine.indexOf('//') : Infinity,
+            trimmedLine.indexOf(';') !== -1 ? trimmedLine.indexOf(';') : Infinity
+          );
+          if (commentIndex !== Infinity) {
+            const codePart = trimmedLine.substring(0, commentIndex).trim();
+            return codePart !== '';
+          }
+        }
+        
+        return true;
+      });
+      
+      return filteredLines.join('\n');
+    },
+    
     generateCode() {
       const { layerThickness, dwellTime, target, selectedFeeder } = this.printingSettings
       
@@ -167,6 +215,41 @@ export default {
         selectedCycle,
         scanSpeed: this.printingSettings.scanSpeed
       })
+    },
+    downloadAsText() {
+      if (!this.generatedCode) {
+        alert('생성된 코드가 없습니다.');
+        return;
+      }
+      
+      // 주석 제거된 코드 생성
+      const cleanCode = this.removeComments(this.generatedCode);
+      
+      if (!cleanCode.trim()) {
+        alert('주석을 제거한 후 저장할 코드가 없습니다.');
+        return;
+      }
+      
+      // 동적 파일명 생성
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const cycleName = this.selectedCycleIndex !== '' ? this.savedCycles[this.selectedCycleIndex]?.name : 'unknown';
+      const fileName = `3D_printing_${cycleName}_${timestamp}.txt`;
+      
+      // Blob 생성 및 다운로드
+      const blob = new Blob([cleanCode], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      // 성공 메시지
+      alert(`코드가 "${fileName}" 파일로 저장되었습니다.\n\n주석이 제거된 깔끔한 코드만 저장되었습니다.`);
     }
   }
 }
@@ -368,7 +451,10 @@ export default {
 }
 
 .generate-section {
-  text-align: center;
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
 .generate-button {
@@ -392,5 +478,42 @@ export default {
 
 .generate-button:active {
   transform: translateY(0);
+}
+
+.download-button {
+  padding: 15px 30px;
+  background: #4CAF50;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.download-button:hover:not(:disabled) {
+  background: #388E3C;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(60, 179, 60, 0.3);
+}
+
+.download-button:active {
+  transform: translateY(0);
+}
+
+.download-button:disabled {
+  background: #CCCCCC;
+  color: #666666;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.download-button:disabled:hover {
+  background: #CCCCCC;
+  transform: none;
+  box-shadow: none;
 }
 </style> 

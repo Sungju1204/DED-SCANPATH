@@ -20,7 +20,9 @@
               @click="addToBottomPanel(item)"
             >
               <div class="grid-item-label">{{ item }}</div>
-              <div class="grid-item-image"></div>
+              <div class="grid-item-image" style="position: relative;">
+                <img :src="require(`@/assets/${item}.jpg`)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+              </div>
             </div>
             <!-- 사용자가 추가한 C 버튼들 -->
             <div 
@@ -31,7 +33,9 @@
               @click="addToBottomPanel(button)"
             >
               <div class="grid-item-label">{{ button }}</div>
-              <div class="grid-item-image"></div>
+              <div class="grid-item-image" style="position: relative;">
+                <img :src="require(`@/assets/${button}.jpg`)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+              </div>
             </div>
           </div>
         </div>
@@ -56,7 +60,9 @@
               @click="addToBottomPanel(item)"
             >
               <div class="grid-item-label">{{ item }}</div>
-              <div class="grid-item-image"></div>
+              <div class="grid-item-image" style="position: relative;">
+                <img :src="require(`@/assets/${item}.jpg`)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+              </div>
             </div>
             <!-- 사용자가 추가한 F 버튼들 -->
             <div 
@@ -67,7 +73,9 @@
               @click="addToBottomPanel(button)"
             >
               <div class="grid-item-label">{{ button }}</div>
-              <div class="grid-item-image"></div>
+              <div class="grid-item-image" style="position: relative;">
+                <img :src="require(`@/assets/${button}.jpg`)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+              </div>
             </div>
           </div>
         </div>
@@ -323,6 +331,11 @@ export default {
   background: #FFFFFF;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: left 0.3s ease;
+}
+
+.content-grid.sidebar-open {
+  left: 517px;
 }
 
 .button-section {

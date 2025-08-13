@@ -84,6 +84,7 @@
         v-show="currentPage === 4"
         :saved-cycles="savedCycles"
         :button-codes="buttonCodes"
+        :generated-code="textAreaContent"
         @generate-code="handleGenerateCode"
       />
 
@@ -554,7 +555,7 @@ body {
   position: absolute;
   width: 461px;
   height: 27px;
-  left: 267px;
+  left: 135px;
   top: 24px;
   font-family: 'Inter', sans-serif;
   font-style: normal;
@@ -568,7 +569,7 @@ body {
 }
 
 .main-frame.sidebar-open .title {
-  left: 517px;
+  left: 385px;
 }
 
 .slash-button {
