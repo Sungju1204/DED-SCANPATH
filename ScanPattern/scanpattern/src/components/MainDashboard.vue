@@ -7,6 +7,7 @@
           <div class="section-title">C 버튼 목록</div>
           <div class="header-buttons">
             <button class="add-button-btn-small" @click="showAddModalForList('C')">+</button>
+            <button class="edit-button-btn-small" @click="showEditModalForList('C')">✏️</button>
             <button class="trash-button-small" @click="showDeleteModalForList('C')">🗑️</button>
           </div>
         </div>
@@ -53,6 +54,7 @@
           <div class="section-title">F 버튼 목록</div>
           <div class="header-buttons">
             <button class="add-button-btn-small" @click="showAddModalForList('F')">+</button>
+            <button class="edit-button-btn-small" @click="showEditModalForList('F')">✏️</button>
             <button class="trash-button-small" @click="showDeleteModalForList('F')">🗑️</button>
           </div>
         </div>
@@ -110,7 +112,12 @@
               @click="addToBottomPanel(button)"
             >
               <div class="grid-item-label">{{ button }}</div>
-              <div class="grid-item-image"></div>
+              <div class="grid-item-image" style="position: relative;">
+                <img v-if="hasButtonImage(button)" :src="getButtonImage(button)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <div v-else class="default-button-icon" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 8px; position: absolute; top: 0; left: 0;">
+                  <span style="font-size: 24px; color: #666;">{{ button }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -238,6 +245,97 @@
         </div>
       </div>
     </div>
+
+    <!-- 버튼 수정 모달창 -->
+    <div v-if="showEditModal" class="modal-overlay" @click="showEditModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>{{ currentList }} 버튼 수정</h3>
+          <button class="modal-close" @click="showEditModal = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="edit-button-section">
+            <div class="section-title">수정할 버튼 선택</div>
+            
+            <div class="button-selection-section">
+              <div class="button-list">
+                <div
+                  v-for="button in editableButtons"
+                  :key="button"
+                  :class="['button-item', 'edit-mode', { 'selected': currentButton === button }]"
+                  @click="selectButtonForEdit(button)"
+                >
+                  {{ button }}
+                </div>
+              </div>
+              <div v-if="editableButtons.length === 0" class="no-buttons-message">
+                수정할 수 있는 버튼이 없습니다.
+              </div>
+            </div>
+            
+            <div v-if="currentButton" class="button-edit-form">
+              <div class="section-title">버튼 정보 수정</div>
+              
+              <div class="button-name-section">
+                <div class="section-title">버튼 이름</div>
+                <div class="add-button-input">
+                  <input
+                    v-model="editButtonName"
+                    type="text"
+                    :placeholder="`버튼 이름 (예: ${currentList}5, ${currentList}6...)`"
+                    maxlength="10"
+                  >
+                </div>
+              </div>
+              
+              <div class="button-code-section">
+                <div class="section-title">버튼 코드</div>
+                <textarea
+                  v-model="editButtonCode"
+                  placeholder="버튼에 할당할 코드를 입력하세요..."
+                  rows="6"
+                  class="code-textarea"
+                ></textarea>
+              </div>
+              
+              <div class="button-image-section">
+                <div class="section-title">버튼 이미지</div>
+                <div class="image-upload-area">
+                  <input
+                    ref="editImageInput"
+                    type="file"
+                    accept="image/*"
+                    @change="handleEditImageUpload"
+                    style="display: none;"
+                  >
+                  <div 
+                    class="image-preview"
+                    @click="$refs.editImageInput.click()"
+                  >
+                    <img v-if="editImagePreview" :src="editImagePreview" alt="미리보기" class="preview-image">
+                    <div v-else-if="hasButtonImage(currentButton)" class="current-image">
+                      <img :src="getButtonImage(currentButton)" alt="현재 이미지" class="preview-image">
+                      <div class="image-overlay">
+                        <span>클릭하여 변경</span>
+                      </div>
+                    </div>
+                    <div v-else class="upload-placeholder">
+                      <span>이미지 업로드</span>
+                      <small>클릭하여 이미지 선택</small>
+                    </div>
+                  </div>
+                  <button v-if="editImagePreview || hasButtonImage(currentButton)" @click="removeEditImage" class="remove-image-btn">이미지 제거</button>
+                </div>
+              </div>
+              
+              <div class="modal-actions">
+                <button @click="updateButton" class="update-button-btn">버튼 수정</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -262,12 +360,18 @@ export default {
     return {
       showAddModal: false,
       showDeleteModal: false,
+      showEditModal: false,
       newButtonName: '',
       newButtonCode: '',
       currentList: '',
+      currentButton: '',
       selectedForDeletion: [],
       imagePreview: null,
       uploadedImage: null,
+      editButtonName: '',
+      editButtonCode: '',
+      editImagePreview: null,
+      editUploadedImage: null,
       defaultButtons: {
         C: ['C1', 'C2', 'C3', 'C4'],
         F: ['F1', 'F2', 'F3', 'F4']
@@ -288,9 +392,14 @@ export default {
       if (!this.currentList) return []
       // 기본 버튼은 삭제할 수 없으므로 사용자 추가 버튼만 반환
       return this.customButtonLists[this.currentList] || []
+    },
+    editableButtons() {
+      if (!this.currentList) return []
+      // 기본 버튼은 수정할 수 없으므로 사용자 추가 버튼만 반환
+      return this.customButtonLists[this.currentList] || []
     }
   },
-  emits: ['add-item', 'remove-item', 'add-button', 'clear-all-items', 'delete-buttons'],
+  emits: ['add-item', 'remove-item', 'add-button', 'clear-all-items', 'delete-buttons', 'update-button'],
   methods: {
     addToBottomPanel(itemName) {
       this.$emit('add-item', itemName)
@@ -308,6 +417,15 @@ export default {
     showAddModalForList(listType) {
       this.currentList = listType
       this.showAddModal = true
+    },
+    showEditModalForList(listType) {
+      this.currentList = listType
+      this.currentButton = ''
+      this.editButtonName = ''
+      this.editButtonCode = ''
+      this.editImagePreview = null
+      this.editUploadedImage = null
+      this.showEditModal = true
     },
     showDeleteModalForList(listType) {
       this.currentList = listType
@@ -424,6 +542,87 @@ export default {
       if (this.$refs.imageInput) {
         this.$refs.imageInput.value = ''
       }
+    },
+    showEditModalForButton(listType, buttonName) {
+      this.currentList = listType
+      this.currentButton = buttonName
+      this.editButtonName = buttonName
+      this.editButtonCode = this.customButtonLists[listType].find(b => b === buttonName).code || '' // 기존 코드 가져오기
+      this.editImagePreview = null
+      this.editUploadedImage = null
+      this.showEditModal = true
+    },
+    selectButtonForEdit(buttonName) {
+      this.currentButton = buttonName
+      this.editButtonName = buttonName
+      // 기존 코드 가져오기 (실제 구현에서는 버튼 객체에서 코드를 가져와야 함)
+      this.editButtonCode = ''
+      this.editImagePreview = null
+      this.editUploadedImage = null
+    },
+    handleEditImageUpload(event) {
+      const file = event.target.files[0]
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert('이미지 파일 크기는 5MB 이하여야 합니다.')
+          return
+        }
+        if (!file.type.startsWith('image/')) {
+          alert('이미지 파일만 업로드 가능합니다.')
+          return
+        }
+        this.editUploadedImage = file
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.editImagePreview = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
+    },
+    removeEditImage() {
+      this.editImagePreview = null
+      this.editUploadedImage = null
+      if (this.$refs.editImageInput) {
+        this.$refs.editImageInput.value = ''
+      }
+    },
+    updateButton() {
+      const selectedList = this.currentList
+      const buttonName = this.editButtonName.trim().toUpperCase()
+      const buttonCode = this.editButtonCode.trim()
+      const buttonImage = this.editUploadedImage || null
+
+      if (!buttonName) {
+        alert('버튼 이름을 입력해주세요.')
+        return
+      }
+
+      // 기본 버튼과 중복 검사
+      if (this.defaultButtons[selectedList] && this.defaultButtons[selectedList].includes(buttonName)) {
+        alert(`"${buttonName}"은 기본 버튼 이름입니다. 다른 이름을 사용해주세요.`)
+        return
+      }
+
+      // 사용자 추가 버튼과 중복 검사
+      if (this.customButtonLists[selectedList] && this.customButtonLists[selectedList].some(b => b.name === buttonName)) {
+        alert(`"${buttonName}"은 이미 존재하는 버튼입니다. 다른 이름을 사용해주세요.`)
+        return
+      }
+
+      this.$emit('update-button', {
+        listType: selectedList,
+        buttonName: buttonName,
+        buttonCode: buttonCode,
+        buttonImage: buttonImage
+      })
+
+      this.showEditModal = false
+      this.editButtonName = ''
+      this.editButtonCode = ''
+      this.editImagePreview = null
+      this.editUploadedImage = null
+      this.currentList = ''
+      this.currentButton = ''
     }
   }
 }
@@ -607,6 +806,34 @@ export default {
   transform: translateY(0);
 }
 
+.edit-button-btn-small {
+  padding: 6px 10px;
+  background: #FFC107;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-button-btn-small:hover {
+  background: #FFB300;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.edit-button-btn-small:active {
+  transform: translateY(0);
+}
+
 .trash-button-small {
   padding: 6px 10px;
   background: #DC3545;
@@ -745,8 +972,8 @@ export default {
 .modal-content {
   background: #FFFFFF;
   border-radius: 12px;
-  padding: 24px;
-  width: 500px;
+  padding: 20px;
+  width: 450px;
   max-width: 90vw;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid #E9ECEF;
@@ -756,14 +983,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid #E9ECEF;
 }
 
 .modal-header h3 {
   color: #1A1A1A;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
@@ -795,15 +1022,23 @@ export default {
 }
 
 .add-button-section {
-  margin-bottom: 20px;
-  padding: 16px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #F8F9FA;
+  border-radius: 8px;
+  border: 1px solid #E9ECEF;
+}
+
+.edit-button-section {
+  margin-bottom: 16px;
+  padding: 12px;
   background: #F8F9FA;
   border-radius: 8px;
   border: 1px solid #E9ECEF;
 }
 
 .button-list-section {
-  padding: 16px;
+  padding: 12px;
   background: #F8F9FA;
   border-radius: 8px;
   border: 1px solid #E9ECEF;
@@ -813,7 +1048,7 @@ export default {
   color: #495057;
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .add-button-input {
@@ -915,6 +1150,22 @@ export default {
   gap: 8px;
 }
 
+.button-selection-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E9ECEF;
+}
+
+.button-edit-form {
+  margin-top: 16px;
+  padding: 12px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E9ECEF;
+}
+
 .button-item {
   display: inline-block;
   background: #444;
@@ -943,6 +1194,15 @@ export default {
   border-color: #E74C3C;
 }
 
+.button-item.edit-mode {
+  cursor: pointer;
+}
+
+.button-item.edit-mode:hover {
+  background: #FFC107;
+  border-color: #FFC107;
+}
+
 .delete-checkbox {
   position: absolute;
   top: -5px;
@@ -962,6 +1222,10 @@ export default {
 .button-code-section,
 .button-image-section {
   margin-top: 20px;
+}
+
+.button-name-section {
+  margin-bottom: 20px;
 }
 
 .code-textarea {
@@ -1030,6 +1294,38 @@ export default {
   border-radius: 6px;
 }
 
+.current-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.current-image:hover .image-overlay {
+  opacity: 1;
+}
+
+.image-overlay span {
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  text-align: center;
+}
+
 .remove-image-btn {
   padding: 6px 12px;
   background: #E74C3C;
@@ -1046,7 +1342,7 @@ export default {
 }
 
 .modal-actions {
-  margin-top: 20px;
+  margin-top: 16px;
   text-align: center;
 }
 
@@ -1067,6 +1363,25 @@ export default {
   background: #0056b3;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.update-button-btn {
+  padding: 12px 24px;
+  background: #28A745;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.update-button-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
 }
 
 .no-buttons-message {
