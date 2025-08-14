@@ -1,5 +1,4 @@
-import { ref, reactive } from 'vue'
-import gcodes from '../constants/gcodes.js'
+import { ref } from 'vue'
 
 export function useAppState() {
   // 기본 상태
@@ -10,27 +9,13 @@ export function useAppState() {
   const selectedItems = ref([])
   const savedCycles = ref([])
   
-  // 버튼 관련 상태
-  const buttonCodes = reactive({
-    C1: gcodes.C1,
-    C2: gcodes.C2,
-    C3: gcodes.C3,
-    C4: gcodes.C4,
-    F1: gcodes.F1,
-    F2: gcodes.F2,
-    F3: gcodes.F3,
-    F4: gcodes.F4,
-  })
-  const selectedButton = ref(null)
-  const customButtonLists = reactive({})
-  const allButtons = ref(['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4'])
+
   
 
   
   // 메뉴 아이템
   const menuItems = [
     { text: '사이클 생성', icon: 'dashboard-icon' },
-    { text: '코드 할당', icon: 'clients-icon' },
     { text: '사이클 관리', icon: 'messages-icon' },
     { text: '코드 파일 생성', icon: 'schedule-icon' }
   ]
@@ -78,10 +63,6 @@ export function useAppState() {
     sidebarOpen,
     selectedItems,
     savedCycles,
-    buttonCodes,
-    selectedButton,
-    customButtonLists,
-    allButtons,
     menuItems,
     
     // 함수

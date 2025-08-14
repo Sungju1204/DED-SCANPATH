@@ -47,6 +47,7 @@
         v-show="currentPage === 1"
         :selected-items="selectedItems"
         :custom-button-lists="customButtonLists"
+        :button-images="buttonImages"
         @add-item="addToBottomPanel"
         @remove-item="removeFromBottomPanel"
         @add-button="handleAddButton"
@@ -55,21 +56,9 @@
         @show-button-code="handleShowButtonCode"
       />
 
-      <!-- Page 2: Code Assignment -->
-      <CodeAssignment 
-        v-show="currentPage === 2"
-        :custom-button-lists="customButtonLists"
-        :button-codes="buttonCodes"
-        :selected-button="selectedButton"
-        @add-button="handleAddButton"
-        @select-button="handleSelectButton"
-        @delete-buttons="handleDeleteButtons"
-        @show-button-code="handleShowButtonCode"
-      />
-
-      <!-- Page 3: Cycle Management -->
+      <!-- Page 2: Cycle Management -->
       <CycleManagement 
-        v-show="currentPage === 3"
+        v-show="currentPage === 2"
         :saved-cycles="savedCycles"
         :is-loading="isLoading"
         :error="error"
@@ -79,19 +68,19 @@
         @retry-load="handleRetryLoad"
       />
 
-      <!-- Page 4: 3D Printing Code Generator -->
+      <!-- Page 3: 3D Printing Code Generator -->
       <PrintingCodeGenerator 
-        v-show="currentPage === 4"
+        v-show="currentPage === 3"
         :saved-cycles="savedCycles"
         :button-codes="buttonCodes"
         :generated-code="textAreaContent"
         @generate-code="handleGenerateCode"
       />
 
-      <!-- Page 5: Placeholder -->
-      <div v-show="currentPage === 5" class="page-content">
+      <!-- Page 4: Placeholder -->
+      <div v-show="currentPage === 4" class="page-content">
         <div class="code-assignment-container">
-          <div class="code-assignment-title">페이지 5</div>
+          <div class="code-assignment-title">페이지 4</div>
           <div style="color: #2D3E8F; text-align: center; margin-top: 100px;">준비 중...</div>
         </div>
       </div>
@@ -101,7 +90,7 @@
         :title="rightPanelTitle"
         :placeholder="textAreaPlaceholder"
         :show-save-cycle="currentPage === 1"
-        :show-save-code="currentPage === 2"
+        :show-save-code="false"
         :readonly="currentPage === 1"
         @update:content="updateContent"
         @save-cycle="handleSaveCycle"
@@ -114,7 +103,6 @@
 
 <script>
 import MainDashboard from './components/MainDashboard.vue'
-import CodeAssignment from './components/CodeAssignment.vue'
 import CycleManagement from './components/CycleManagement.vue'
 import PrintingCodeGenerator from './components/PrintingCodeGenerator.vue'
 import RightPanel from './components/RightPanel.vue'
@@ -131,7 +119,6 @@ export default {
   name: 'App',
   components: {
     MainDashboard,
-    CodeAssignment,
     CycleManagement,
     PrintingCodeGenerator,
     RightPanel
@@ -141,10 +128,6 @@ export default {
     const {
       currentPage,
       selectedItems,
-      buttonCodes,
-      selectedButton,
-      customButtonLists,
-      allButtons,
       menuItems,
       loadAppState
     } = useAppState()
@@ -176,15 +159,27 @@ export default {
     } = useCycleManagement()
     
     const {
+      buttonCodes,
+      selectedButton,
+      customButtonLists,
+      allButtons,
+      buttonImages,
       addButton,
       deleteButtons,
       selectButton,
       saveCode,
+      saveButtonImage,
       loadButtonData,
       saveButtonData
     } = useButtonManagement()
     
     const { generate3DPrintingCode } = useCodeGeneration()
+    
+    // 데이터 저장 함수
+    const saveData = () => {
+      saveButtonData()
+      saveCyclesToStorage()
+    }
     
     // 데이터 로드
     const loadData = async () => {
@@ -208,11 +203,7 @@ export default {
       }
     }
     
-    // 데이터 저장
-    const saveData = () => {
-      saveCyclesToStorage()
-      saveButtonData()
-    }
+
     
     // 페이지 전환
     const switchPage = (pageNumber) => {
@@ -308,9 +299,26 @@ export default {
     }
     
     // 버튼 추가 처리
-    const handleAddButton = ({ selectedList, buttonName }) => {
+    const handleAddButton = async ({ selectedList, buttonName, buttonCode, buttonImage }) => {
       try {
         addButton(selectedList, buttonName)
+        
+        // 코드가 입력된 경우 저장
+        if (buttonCode && buttonCode.trim()) {
+          saveCode(buttonName, buttonCode)
+        }
+        
+        // 이미지가 업로드된 경우 처리
+        if (buttonImage) {
+          try {
+            await saveButtonImage(buttonName, buttonImage)
+            console.log('이미지 저장됨:', buttonImage.name)
+          } catch (error) {
+            console.error('이미지 저장 실패:', error)
+            alert('이미지 저장에 실패했습니다.')
+          }
+        }
+        
         saveData()
       } catch (error) {
         alert(error.message)
@@ -459,6 +467,7 @@ export default {
       selectedButton,
       customButtonLists,
       allButtons,
+      buttonImages,
       sidebarOpen,
       menuItems,
       
@@ -486,7 +495,8 @@ export default {
       handleUpdateCycle,
       handleRetryLoad,
       handleGenerateCode,
-      loadAppState
+      loadAppState,
+      saveData
     }
   }
 }

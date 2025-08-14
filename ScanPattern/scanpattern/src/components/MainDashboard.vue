@@ -21,7 +21,10 @@
             >
               <div class="grid-item-label">{{ item }}</div>
               <div class="grid-item-image" style="position: relative;">
-                <img :src="require(`@/assets/${item}.jpg`)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <img v-if="hasButtonImage(item)" :src="getButtonImage(item)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <div v-else class="default-button-icon" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 8px; position: absolute; top: 0; left: 0;">
+                  <span style="font-size: 24px; color: #666;">{{ item }}</span>
+                </div>
               </div>
             </div>
             <!-- 사용자가 추가한 C 버튼들 -->
@@ -34,7 +37,10 @@
             >
               <div class="grid-item-label">{{ button }}</div>
               <div class="grid-item-image" style="position: relative;">
-                <img :src="require(`@/assets/${button}.jpg`)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <img v-if="hasButtonImage(button)" :src="getButtonImage(button)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <div v-else class="default-button-icon" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 8px; position: absolute; top: 0; left: 0;">
+                  <span style="font-size: 24px; color: #666;">{{ button }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -61,7 +67,10 @@
             >
               <div class="grid-item-label">{{ item }}</div>
               <div class="grid-item-image" style="position: relative;">
-                <img :src="require(`@/assets/${item}.jpg`)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <img v-if="hasButtonImage(item)" :src="getButtonImage(item)" :alt="item" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <div v-else class="default-button-icon" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 8px; position: absolute; top: 0; left: 0;">
+                  <span style="font-size: 24px; color: #666;">{{ item }}</span>
+                </div>
               </div>
             </div>
             <!-- 사용자가 추가한 F 버튼들 -->
@@ -74,7 +83,10 @@
             >
               <div class="grid-item-label">{{ button }}</div>
               <div class="grid-item-image" style="position: relative;">
-                <img :src="require(`@/assets/${button}.jpg`)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <img v-if="hasButtonImage(button)" :src="getButtonImage(button)" :alt="button" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position: absolute; top: 0; left: 0;" />
+                <div v-else class="default-button-icon" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; border-radius: 8px; position: absolute; top: 0; left: 0;">
+                  <span style="font-size: 24px; color: #666;">{{ button }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -140,7 +152,44 @@
                 :placeholder="`버튼 이름 (예: ${currentList}5, ${currentList}6...)`"
                 maxlength="10"
               >
-              <button @click="addButton">버튼 추가</button>
+            </div>
+            
+            <div class="button-code-section">
+              <div class="section-title">버튼 코드 (선택사항)</div>
+              <textarea
+                v-model="newButtonCode"
+                placeholder="버튼에 할당할 코드를 입력하세요..."
+                rows="6"
+                class="code-textarea"
+              ></textarea>
+            </div>
+            
+            <div class="button-image-section">
+              <div class="section-title">버튼 이미지 (선택사항)</div>
+              <div class="image-upload-area">
+                <input
+                  ref="imageInput"
+                  type="file"
+                  accept="image/*"
+                  @change="handleImageUpload"
+                  style="display: none;"
+                >
+                <div 
+                  class="image-preview"
+                  @click="$refs.imageInput.click()"
+                >
+                  <img v-if="imagePreview" :src="imagePreview" alt="미리보기" class="preview-image">
+                  <div v-else class="upload-placeholder">
+                    <span>이미지 업로드</span>
+                    <small>클릭하여 이미지 선택</small>
+                  </div>
+                </div>
+                <button v-if="imagePreview" @click="removeImage" class="remove-image-btn">이미지 제거</button>
+              </div>
+            </div>
+            
+            <div class="modal-actions">
+              <button @click="addButton" class="add-button-btn">버튼 추가</button>
             </div>
           </div>
         </div>
@@ -203,6 +252,10 @@ export default {
     customButtonLists: {
       type: Object,
       default: () => ({})
+    },
+    buttonImages: {
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
@@ -210,8 +263,11 @@ export default {
       showAddModal: false,
       showDeleteModal: false,
       newButtonName: '',
+      newButtonCode: '',
       currentList: '',
       selectedForDeletion: [],
+      imagePreview: null,
+      uploadedImage: null,
       defaultButtons: {
         C: ['C1', 'C2', 'C3', 'C4'],
         F: ['F1', 'F2', 'F3', 'F4']
@@ -279,10 +335,21 @@ export default {
         return
       }
 
-      this.$emit('add-button', { selectedList, buttonName })
+      this.$emit('add-button', { 
+        selectedList, 
+        buttonName, 
+        buttonCode: this.newButtonCode.trim(),
+        buttonImage: this.uploadedImage
+      })
+      
+      // 폼 초기화
       this.newButtonName = ''
+      this.newButtonCode = ''
+      this.imagePreview = null
+      this.uploadedImage = null
       this.currentList = ''
       this.showAddModal = false
+      
       alert(`버튼 "${buttonName}"이 목록 "${selectedList}"에 추가되었습니다.`)
     },
     toggleDeleteSelection(button) {
@@ -306,7 +373,56 @@ export default {
         })
         this.selectedForDeletion = []
         this.showDeleteModal = false
-        alert('선택된 버튼들이 삭제되었습니다.')
+      }
+    },
+    hasButtonImage(buttonName) {
+      // 기본 버튼들 또는 사용자 추가 이미지가 있는 경우
+      const defaultButtons = ['C1', 'C2', 'C3', 'C4', 'F1', 'F2', 'F3', 'F4']
+      return defaultButtons.includes(buttonName) || this.buttonImages[buttonName]
+    },
+    getButtonImage(buttonName) {
+      // 사용자 추가 이미지가 있으면 먼저 반환
+      if (this.buttonImages[buttonName]) {
+        return this.buttonImages[buttonName]
+      }
+      
+      // 기본 이미지가 있으면 반환
+      try {
+        return require(`@/assets/${buttonName}.jpg`)
+      } catch (error) {
+        return null
+      }
+    },
+    handleImageUpload(event) {
+      const file = event.target.files[0]
+      if (file) {
+        // 파일 크기 제한 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('이미지 파일 크기는 5MB 이하여야 합니다.')
+          return
+        }
+        
+        // 이미지 파일 타입 확인
+        if (!file.type.startsWith('image/')) {
+          alert('이미지 파일만 업로드 가능합니다.')
+          return
+        }
+        
+        this.uploadedImage = file
+        
+        // 미리보기 생성
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          this.imagePreview = e.target.result
+        }
+        reader.readAsDataURL(file)
+      }
+    },
+    removeImage() {
+      this.imagePreview = null
+      this.uploadedImage = null
+      if (this.$refs.imageInput) {
+        this.$refs.imageInput.value = ''
       }
     }
   }
@@ -840,7 +956,117 @@ export default {
 .button-item.selected {
   background: #E74C3C;
   border-color: #E74C3C;
+}
+
+/* 새로운 모달 스타일 */
+.button-code-section,
+.button-image-section {
+  margin-top: 20px;
+}
+
+.code-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.code-textarea:focus {
+  outline: none;
+  border-color: #007BFF;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.image-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.image-preview {
+  width: 120px;
+  height: 120px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.image-preview:hover {
+  border-color: #007BFF;
+  background: #f0f8ff;
+}
+
+.upload-placeholder {
+  text-align: center;
+  color: #666;
+}
+
+.upload-placeholder span {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.upload-placeholder small {
+  font-size: 12px;
+  color: #999;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.remove-image-btn {
+  padding: 6px 12px;
+  background: #E74C3C;
   color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: #C0392B;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.add-button-btn {
+  padding: 12px 24px;
+  background: #007BFF;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-button-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
 .no-buttons-message {
